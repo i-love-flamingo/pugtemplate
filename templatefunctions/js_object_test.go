@@ -1,18 +1,18 @@
 package templatefunctions
 
 import (
+	"context"
 	"testing"
 
-	"flamingo.me/flamingo/v3/core/pugtemplate/pugjs"
-	"flamingo.me/flamingo/v3/framework/template"
-
+	"flamingo.me/flamingo/v3/framework/flamingo"
+	"flamingo.me/pugtemplate/pugjs"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestJsObject(t *testing.T) {
-	var jsObject template.Func = new(JsObject)
+	var jsObject flamingo.TemplateFunc = new(JsObject)
 
-	object := jsObject.Func().(func() Object)()
+	object := jsObject.Func(context.Background()).(func() Object)()
 
 	m := &pugjs.Map{
 		Items: make(map[pugjs.Object]pugjs.Object),

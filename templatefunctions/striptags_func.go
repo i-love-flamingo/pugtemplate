@@ -1,6 +1,7 @@
 package templatefunctions
 
 import (
+	"context"
 	"strings"
 
 	"golang.org/x/net/html"
@@ -11,7 +12,7 @@ type (
 )
 
 // Func as implementation of debug method
-func (df StriptagsFunc) Func() interface{} {
+func (df StriptagsFunc) Func(ctx context.Context) interface{} {
 	return func(htmlString string) string {
 		doc, err := html.ParseFragment(strings.NewReader(htmlString), nil)
 		if err != nil {

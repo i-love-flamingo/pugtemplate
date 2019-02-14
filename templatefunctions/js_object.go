@@ -1,10 +1,11 @@
 package templatefunctions
 
 import (
+	"context"
 	"sort"
 	"strconv"
 
-	"flamingo.me/flamingo/v3/core/pugtemplate/pugjs"
+	"flamingo.me/pugtemplate/pugjs"
 )
 
 type (
@@ -16,7 +17,7 @@ type (
 )
 
 // Func as implementation of debug method
-func (ol JsObject) Func() interface{} {
+func (ol JsObject) Func(ctx context.Context) interface{} {
 	return func() Object {
 		return Object{}
 	}

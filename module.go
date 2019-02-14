@@ -3,6 +3,7 @@ package pugtemplate
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"log"
@@ -11,27 +12,23 @@ import (
 	"path/filepath"
 	"strings"
 
-	"fmt"
-
-	"flamingo.me/flamingo/v3/core/pugtemplate/puganalyse"
-	"flamingo.me/flamingo/v3/core/pugtemplate/pugjs"
-	"flamingo.me/flamingo/v3/core/pugtemplate/templatefunctions"
+	"flamingo.me/dingo"
 	"flamingo.me/flamingo/v3/framework/config"
-	"flamingo.me/flamingo/v3/framework/dingo"
-	"flamingo.me/flamingo/v3/framework/event"
-	"flamingo.me/flamingo/v3/framework/router"
-	"flamingo.me/flamingo/v3/framework/template"
+	"flamingo.me/flamingo/v3/framework/flamingo"
 	"flamingo.me/flamingo/v3/framework/web"
+	"flamingo.me/pugtemplate/puganalyse"
+	"flamingo.me/pugtemplate/pugjs"
+	"flamingo.me/pugtemplate/templatefunctions"
 	"github.com/spf13/cobra"
 )
 
 type (
 	// Module for framework/pug_template
 	Module struct {
-		RootCmd        *cobra.Command   `inject:"flamingo"`
-		RouterRegistry *router.Registry `inject:""`
-		DefaultMux     *http.ServeMux   `inject:",optional"`
-		Basedir        string           `inject:"config:pug_template.basedir"`
+		RootCmd        *cobra.Command      `inject:"flamingo"`
+		RouterRegistry *web.RouterRegistry `inject:""`
+		DefaultMux     *http.ServeMux      `inject:",optional"`
+		Basedir        string              `inject:"config:pug_template.basedir"`
 	}
 
 	routes struct {
@@ -44,12 +41,12 @@ func (r *routes) Inject(controller *DebugController) {
 	r.controller = controller
 }
 
-func (r *routes) Routes(registry *router.Registry) {
+func (r *routes) Routes(registry *web.RouterRegistry) {
 	registry.Route("/_pugtpl/debug", "pugtpl.debug")
 	registry.HandleGet("pugtpl.debug", r.controller.Get)
 
 	//registry.HandleAny("_static", router.HTTPAction(http.StripPrefix("/static/", http.FileServer(http.Dir(r.Basedir)))))
-	registry.HandleAny("_static", router.HTTPAction(http.StripPrefix("/static/", http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+	registry.HandleAny("_static", web.WrapHTTPHandler(http.StripPrefix("/static/", http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		origin := req.Header.Get("Origin")
 		if origin != "" {
 			//TODO - configure whitelist
@@ -59,12 +56,12 @@ func (r *routes) Routes(registry *router.Registry) {
 	}))))
 	registry.Route("/static/*n", "_static")
 
-	registry.HandleData("page.template", func(ctx context.Context, _ *web.Request) interface{} {
+	registry.HandleData("page.template", func(ctx context.Context, _ *web.Request, _ web.RequestParams) interface{} {
 		return ctx.Value("page.template")
 	})
 
 	registry.Route("/assets/*f", "_pugtemplate.assets")
-	registry.HandleAny("_pugtemplate.assets", router.HTTPAction(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+	registry.HandleAny("_pugtemplate.assets", web.WrapHTTPHandler(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		origin := req.Header.Get("Origin")
 		if origin != "" {
 			//TODO - configure whitelist
@@ -84,9 +81,9 @@ func (m *Module) Configure(injector *dingo.Injector) {
 	// We bind the Template Engine to the ChildSingleton level (in case there is different config handling
 	// We use the provider to make sure both are always the same injected type
 	injector.Bind(pugjs.Engine{}).In(dingo.ChildSingleton).ToProvider(pugjs.NewEngine)
-	injector.Bind((*template.Engine)(nil)).In(dingo.ChildSingleton).ToProvider(
-		func(t *pugjs.Engine, i *dingo.Injector) template.Engine {
-			return (template.Engine)(t)
+	injector.Bind((*flamingo.TemplateEngine)(nil)).In(dingo.ChildSingleton).ToProvider(
+		func(t *pugjs.Engine, i *dingo.Injector) flamingo.TemplateEngine {
+			return flamingo.TemplateEngine(t)
 		},
 	)
 
@@ -106,21 +103,21 @@ func (m *Module) Configure(injector *dingo.Injector) {
 		})
 	}
 
-	injector.BindMap((*template.Func)(nil), "Math").To(templatefunctions.JsMath{})
-	injector.BindMap((*template.Func)(nil), "Object").To(templatefunctions.JsObject{})
-	injector.BindMap((*template.Func)(nil), "debug").To(templatefunctions.DebugFunc{})
-	injector.BindMap((*template.Func)(nil), "JSON").To(templatefunctions.JsJSON{})
-	injector.BindMap((*template.Func)(nil), "startsWith").To(templatefunctions.StartsWithFunc{})
-	injector.BindMap((*template.Func)(nil), "truncate").To(templatefunctions.TruncateFunc{})
-	injector.BindMap((*template.Func)(nil), "stripTags").To(templatefunctions.StriptagsFunc{})
-	injector.BindMap((*template.Func)(nil), "capitalize").To(templatefunctions.CapitalizeFunc{})
-	injector.BindMap((*template.Func)(nil), "trim").To(templatefunctions.TrimFunc{})
+	injector.BindMap((*flamingo.TemplateFunc)(nil), "Math").To(templatefunctions.JsMath{})
+	injector.BindMap((*flamingo.TemplateFunc)(nil), "Object").To(templatefunctions.JsObject{})
+	injector.BindMap((*flamingo.TemplateFunc)(nil), "debug").To(templatefunctions.DebugFunc{})
+	injector.BindMap((*flamingo.TemplateFunc)(nil), "JSON").To(templatefunctions.JsJSON{})
+	injector.BindMap((*flamingo.TemplateFunc)(nil), "startsWith").To(templatefunctions.StartsWithFunc{})
+	injector.BindMap((*flamingo.TemplateFunc)(nil), "truncate").To(templatefunctions.TruncateFunc{})
+	injector.BindMap((*flamingo.TemplateFunc)(nil), "stripTags").To(templatefunctions.StriptagsFunc{})
+	injector.BindMap((*flamingo.TemplateFunc)(nil), "capitalize").To(templatefunctions.CapitalizeFunc{})
+	injector.BindMap((*flamingo.TemplateFunc)(nil), "trim").To(templatefunctions.TrimFunc{})
 
-	injector.BindMap((*template.CtxFunc)(nil), "asset").To(templatefunctions.AssetFunc{})
-	injector.BindMap((*template.CtxFunc)(nil), "data").To(templatefunctions.DataFunc{})
-	injector.BindMap((*template.CtxFunc)(nil), "get").To(templatefunctions.GetFunc{})
-	injector.BindMap((*template.CtxFunc)(nil), "tryUrl").To(templatefunctions.TryURLFunc{})
-	injector.BindMap((*template.CtxFunc)(nil), "url").To(templatefunctions.URLFunc{})
+	injector.BindMap((*flamingo.TemplateFunc)(nil), "asset").To(templatefunctions.AssetFunc{})
+	injector.BindMap((*flamingo.TemplateFunc)(nil), "data").To(templatefunctions.DataFunc{})
+	injector.BindMap((*flamingo.TemplateFunc)(nil), "get").To(templatefunctions.GetFunc{})
+	injector.BindMap((*flamingo.TemplateFunc)(nil), "tryUrl").To(templatefunctions.TryURLFunc{})
+	injector.BindMap((*flamingo.TemplateFunc)(nil), "url").To(templatefunctions.URLFunc{})
 
 	m.loadmock("../src/layout/*")
 	m.loadmock("../src/layout/*/*")
@@ -132,8 +129,8 @@ func (m *Module) Configure(injector *dingo.Injector) {
 	m.loadmock("../src/mock")
 
 	injector.BindMulti(new(cobra.Command)).ToProvider(templatecheckCmd)
-	router.Bind(injector, new(routes))
-	injector.BindMulti(new(event.Subscriber)).To(pugjs.EventSubscriber{})
+	web.BindRoutes(injector, new(routes))
+	flamingo.BindEventSubscriber(injector).To(pugjs.EventSubscriber{})
 }
 
 func templatecheckCmd() *cobra.Command {
@@ -236,8 +233,8 @@ func (m *Module) loadmock(where string) (interface{}, error) {
 	return nil, nil
 }
 
-func mockcontroller(name string, data interface{}) router.DataAction {
-	return func(context.Context, *web.Request) interface{} {
+func mockcontroller(name string, data interface{}) web.DataAction {
+	return func(context.Context, *web.Request, web.RequestParams) interface{} {
 		return data
 	}
 }

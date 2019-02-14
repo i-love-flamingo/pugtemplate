@@ -3,14 +3,14 @@ package templatefunctions
 import (
 	"context"
 
-	"flamingo.me/flamingo/v3/core/pugtemplate/pugjs"
-	"flamingo.me/flamingo/v3/framework/router"
+	"flamingo.me/flamingo/v3/framework/web"
+	"flamingo.me/pugtemplate/pugjs"
 )
 
 type (
 	// GetFunc allows templates to access the router's `get` method
 	GetFunc struct {
-		Router *router.Router `inject:""`
+		Router *web.Router `inject:""`
 	}
 )
 

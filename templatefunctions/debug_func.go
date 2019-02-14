@@ -1,9 +1,10 @@
 package templatefunctions
 
 import (
+	"context"
 	"encoding/json"
 
-	"flamingo.me/flamingo/v3/core/pugtemplate/pugjs"
+	"flamingo.me/pugtemplate/pugjs"
 )
 
 type (
@@ -12,7 +13,7 @@ type (
 )
 
 // Func as implementation of debug method
-func (df DebugFunc) Func() interface{} {
+func (df DebugFunc) Func(ctx context.Context) interface{} {
 	return func(o interface{}, allowDeep ...bool) string {
 		if len(allowDeep) > 0 {
 			pugjs.AllowDeep = allowDeep[0]

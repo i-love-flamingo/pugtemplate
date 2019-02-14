@@ -5,22 +5,21 @@ import (
 	"html/template"
 	"net/url"
 
-	"flamingo.me/flamingo/v3/core/pugtemplate/pugjs"
-	"flamingo.me/flamingo/v3/framework/router"
 	"flamingo.me/flamingo/v3/framework/web"
+	"flamingo.me/pugtemplate/pugjs"
 )
 
 type (
 	// URLFunc allows templates to access the routers `URL` helper method
 	URLFunc struct {
-		Router *router.Router `inject:""`
+		Router *web.Router `inject:""`
 	}
 )
 
 // Func as implementation of url method
 func (u *URLFunc) Func(ctx context.Context) interface{} {
 	return func(where string, params ...*pugjs.Map) template.URL {
-		request, _ := web.FromContext(ctx)
+		request := web.RequestFromContext(ctx)
 		if where == "" {
 			q := request.Request().URL.Query()
 			if len(params) == 1 {
@@ -51,7 +50,7 @@ func (u *URLFunc) Func(ctx context.Context) interface{} {
 				}
 			}
 		}
-		url := u.Router.URL(where, p)
+		url, _ := u.Router.URL(where, p)
 		query := url.Query()
 		for k, v := range q {
 			for _, i := range v {

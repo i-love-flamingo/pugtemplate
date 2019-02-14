@@ -15,7 +15,7 @@ import (
 	"unicode"
 	"unicode/utf8"
 
-	"flamingo.me/flamingo/v3/core/pugtemplate/pugjs/parse"
+	"flamingo.me/pugtemplate/pugjs/parse"
 	"go.opencensus.io/trace"
 )
 

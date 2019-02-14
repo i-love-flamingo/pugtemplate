@@ -15,10 +15,8 @@ import (
 	"sync/atomic"
 	"time"
 
-	"flamingo.me/flamingo/v3/framework/event"
 	"flamingo.me/flamingo/v3/framework/flamingo"
 	"flamingo.me/flamingo/v3/framework/opencensus"
-	"flamingo.me/flamingo/v3/framework/template"
 	"github.com/pkg/errors"
 	"go.opencensus.io/stats"
 	"go.opencensus.io/stats/view"
@@ -42,9 +40,11 @@ type (
 		rawmode      bool
 		doctype      string
 		debug        bool
-		eventRouter  event.Router
+		eventRouter  flamingo.EventRouter
 		logger       flamingo.Logger
 	}
+
+	templateFuncProvider func() map[string]flamingo.TemplateFunc
 
 	// Engine is the one and only javascript template engine for go ;)
 	Engine struct {
@@ -56,10 +56,9 @@ type (
 		templates       map[string]*Template
 		TemplateCode    map[string]string
 		Webpackserver   bool
-		EventRouter     event.Router             `inject:""`
-		FuncProvider    template.FuncProvider    `inject:""`
-		CtxFuncProvider template.CtxFuncProvider `inject:""`
-		Logger          flamingo.Logger          `inject:""`
+		EventRouter     flamingo.EventRouter `inject:""`
+		FuncProvider    templateFuncProvider `inject:""`
+		Logger          flamingo.Logger      `inject:""`
 	}
 
 	// EventSubscriber is the event subscriber for Engine
@@ -86,7 +85,7 @@ func NewEngine() *Engine {
 	}
 }
 
-func newRenderState(path string, debug bool, eventRouter event.Router, logger flamingo.Logger) *renderState {
+func newRenderState(path string, debug bool, eventRouter flamingo.EventRouter, logger flamingo.Logger) *renderState {
 	return &renderState{
 		path:        path,
 		mixin:       make(map[string]string),
@@ -104,8 +103,8 @@ func (e *EventSubscriber) Inject(engine *Engine, logger flamingo.Logger) {
 }
 
 // Notify the event subscriper
-func (e *EventSubscriber) Notify(event event.Event) {
-	if _, ok := event.(*flamingo.AppStartupEvent); ok {
+func (e *EventSubscriber) Notify(event flamingo.Event) {
+	if _, ok := event.(*flamingo.StartupEvent); ok {
 		e.logger.Info("preloading templates on flamingo.AppStartupEvent")
 		go e.engine.LoadTemplates("")
 	}
@@ -183,9 +182,6 @@ func (e *Engine) compileDir(root, dirname, filtername string) (map[string]*Templ
 				renderState.funcs = FuncMap{}
 
 				for k, f := range e.FuncProvider() {
-					renderState.funcs[k] = f.Func()
-				}
-				for k, f := range e.CtxFuncProvider() {
 					renderState.funcs[k] = f.Func
 				}
 

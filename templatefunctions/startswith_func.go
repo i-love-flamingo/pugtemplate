@@ -1,6 +1,7 @@
 package templatefunctions
 
 import (
+	"context"
 	"strings"
 )
 
@@ -8,7 +9,7 @@ type (
 	StartsWithFunc struct{}
 )
 
-func (s *StartsWithFunc) Func() interface{} {
+func (s *StartsWithFunc) Func(ctx context.Context) interface{} {
 	return func(haystack string, needle string) bool {
 		haystack = strings.ToLower(haystack)
 		needle = strings.ToLower(needle)

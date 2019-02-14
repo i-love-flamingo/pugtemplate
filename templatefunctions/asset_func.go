@@ -5,16 +5,16 @@ import (
 	"html/template"
 	"strings"
 
-	"flamingo.me/flamingo/v3/core/pugtemplate/pugjs"
-	"flamingo.me/flamingo/v3/framework/router"
+	"flamingo.me/flamingo/v3/framework/web"
+	"flamingo.me/pugtemplate/pugjs"
 )
 
 type (
 	// AssetFunc returns the proper URL for the asset, either local or via CDN
 	AssetFunc struct {
-		Router  *router.Router `inject:""`
-		Engine  *pugjs.Engine  `inject:""`
-		BaseUrl string         `inject:"config:cdn.base_url,optional"`
+		Router  *web.Router   `inject:""`
+		Engine  *pugjs.Engine `inject:""`
+		BaseUrl string        `inject:"config:cdn.base_url,optional"`
 	}
 )
 
@@ -43,7 +43,8 @@ func (af *AssetFunc) Func(ctx context.Context) interface{} {
 
 		result = strings.TrimLeft(result, "/")
 
-		result = af.Router.URL("_static", router.P{"n": result}).String()
+		resultURL, _ := af.Router.URL("_static", map[string]string{"n": result})
+		result = resultURL.String()
 
 		if af.BaseUrl != "" {
 			baseUrl := strings.TrimRight(af.BaseUrl, "/")

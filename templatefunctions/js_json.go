@@ -1,9 +1,10 @@
 package templatefunctions
 
 import (
+	"context"
 	"encoding/json"
 
-	"flamingo.me/flamingo/v3/core/pugtemplate/pugjs"
+	"flamingo.me/pugtemplate/pugjs"
 )
 
 type (
@@ -15,7 +16,7 @@ type (
 )
 
 // Func returns the JSON object
-func (jl JsJSON) Func() interface{} {
+func (jl JsJSON) Func(ctx context.Context) interface{} {
 	return func() JSON {
 		return JSON{}
 	}

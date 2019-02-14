@@ -1,17 +1,17 @@
 package templatefunctions
 
 import (
+	"context"
 	"testing"
 
-	"flamingo.me/flamingo/v3/framework/template"
-
+	"flamingo.me/flamingo/v3/framework/flamingo"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestJsMath(t *testing.T) {
-	var jsMath template.Func = new(JsMath)
+	var jsMath flamingo.TemplateFunc = new(JsMath)
 
-	math := jsMath.Func().(func() Math)()
+	math := jsMath.Func(context.Background()).(func() Math)()
 
 	// equal
 	assert.Equal(t, 1., math.Min(1, int64(2), 3.))

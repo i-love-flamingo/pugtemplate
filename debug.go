@@ -8,8 +8,8 @@ import (
 	"net/http"
 	"strings"
 
-	"flamingo.me/flamingo/v3/core/pugtemplate/pugjs"
 	"flamingo.me/flamingo/v3/framework/web"
+	"flamingo.me/pugtemplate/pugjs"
 )
 
 type (
@@ -35,10 +35,11 @@ const debugTemplate = `<!doctype html>
 `
 
 // Get Response for Debug Info
-func (dc *DebugController) Get(ctx context.Context, r *web.Request) web.Response {
-	dc.Engine.LoadTemplates(r.MustQuery1("tpl"))
+func (dc *DebugController) Get(ctx context.Context, r *web.Request) web.Result {
+	tplName, _ := r.Query1("tpl")
+	dc.Engine.LoadTemplates(tplName)
 
-	tpl, ok := dc.Engine.TemplateCode[r.MustQuery1("tpl")]
+	tpl, ok := dc.Engine.TemplateCode[tplName]
 	if !ok {
 		panic("tpl not found")
 	}
@@ -52,11 +53,9 @@ func (dc *DebugController) Get(ctx context.Context, r *web.Request) web.Response
 
 	t.Execute(body, tpls)
 
-	return &web.ContentResponse{
-		ContentType: "text/html; charset=utf-8",
-		BasicResponse: web.BasicResponse{
-			Status: http.StatusOK,
-		},
-		Body: body,
+	return &web.Response{
+		Header: http.Header{"ContentType": []string{"text/html; charset=utf-8"}},
+		Status: http.StatusOK,
+		Body:   body,
 	}
 }

@@ -1,6 +1,7 @@
 package templatefunctions
 
 import (
+	"context"
 	"math"
 	"reflect"
 )
@@ -14,7 +15,7 @@ type (
 )
 
 // Func as implementation of debug method
-func (ml JsMath) Func() interface{} {
+func (ml JsMath) Func(ctx context.Context) interface{} {
 	return func() Math {
 		return Math{}
 	}
