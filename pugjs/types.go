@@ -33,6 +33,29 @@ func Convert(in interface{}) Object {
 	return convert(in)
 }
 
+type proxy struct {
+	o reflect.Value
+	m *Map
+}
+
+func (p *proxy) Member(name string) Object {
+	if p.m == nil {
+		p.m = convert(p.o).(*Map)
+	}
+	return p.m.Member(name)
+}
+
+func (p *proxy) String() string {
+	if p.m == nil {
+		p.m = convert(p.o).(*Map)
+	}
+	return p.m.String()
+}
+
+func (p *proxy) copy() Object {
+	return &proxy{o: p.o}
+}
+
 func convert(in interface{}) Object {
 	if in == nil {
 		return Nil{}
@@ -116,7 +139,11 @@ func convert(in interface{}) Object {
 
 		for i := 0; i < val.NumField(); i++ {
 			if val.Field(i).CanInterface() {
-				newMap.Items[String(lowerFirst(val.Type().Field(i).Name))] = convert(val.Field(i))
+				if val.Field(i).Kind() == reflect.Struct {
+					newMap.Items[String(lowerFirst(val.Type().Field(i).Name))] = &proxy{o: val.Field(i)}
+				} else {
+					newMap.Items[String(lowerFirst(val.Type().Field(i).Name))] = convert(val.Field(i))
+				}
 			}
 		}
 
