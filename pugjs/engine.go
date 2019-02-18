@@ -103,7 +103,7 @@ func (e *EventSubscriber) Inject(engine *Engine, logger flamingo.Logger) {
 }
 
 // Notify the event subscriper
-func (e *EventSubscriber) Notify(event flamingo.Event) {
+func (e *EventSubscriber) Notify(_ context.Context, event flamingo.Event) {
 	if _, ok := event.(*flamingo.StartupEvent); ok {
 		e.logger.Info("preloading templates on flamingo.AppStartupEvent")
 		go e.engine.LoadTemplates("")
