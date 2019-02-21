@@ -11,6 +11,7 @@ import (
 	"io"
 	"reflect"
 	"sort"
+	"strconv"
 	"strings"
 	"unicode"
 	"unicode/utf8"
@@ -864,6 +865,16 @@ func (s *state) validateType(value reflect.Value, typ reflect.Type) reflect.Valu
 				switch typ.Kind() {
 				case reflect.String:
 					return reflect.ValueOf(o.String())
+				case reflect.Float64:
+					if valueNumber, ok := value.Interface().(Number); ok {
+						return reflect.ValueOf(float64(valueNumber))
+					}
+					if valueString, ok := value.Interface().(String); ok {
+						parsedFloat, err := strconv.ParseFloat(string(valueString), 64)
+						if err != nil {
+							return reflect.ValueOf(parsedFloat)
+						}
+					}
 				}
 			}
 			if _, ok := value.Interface().(Nil); ok {
@@ -872,6 +883,14 @@ func (s *state) validateType(value reflect.Value, typ reflect.Type) reflect.Valu
 			if a, ok := value.Interface().(*Array); ok {
 				return s.validateType(reflect.ValueOf(a.o), typ)
 			}
+			//before failing see if we can make it to a string
+			switch typ.Kind() {
+			case reflect.String:
+				if string, ok := value.Interface().(fmt.Stringer); ok {
+					return reflect.ValueOf(string.String())
+				}
+			}
+
 			s.errorf("wrong type for value; expected %s; got %s", typ, value.Type())
 		}
 	}
