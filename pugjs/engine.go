@@ -202,21 +202,20 @@ func (e *Engine) compileDir(root, dirname, filtername string) (map[string]*Templ
 
 var renderChan = make(chan struct{}, 8)
 
+var _ flamingo.TemplateEngine = new(Engine)
+var _ flamingo.PartialTemplateEngine = new(Engine)
+
 // RenderPartials is used for progressive enhancements / rendering of partial template areas
 // usually this is requested via the appropriate javascript headers and taken care of in the framework renderer
-func (e *Engine) RenderPartials(ctx context.Context, templateName string, data interface{}, partials []string) (map[string]string, error) {
-	res := make(map[string]string, len(partials))
+func (e *Engine) RenderPartials(ctx context.Context, templateName string, data interface{}, partials []string) (map[string]io.Reader, error) {
+	res := make(map[string]io.Reader, len(partials))
 
 	for _, partial := range partials {
 		buf, err := e.Render(ctx, templateName+".partial/"+partial, data)
 		if err != nil {
 			return nil, err
 		}
-		str, err := ioutil.ReadAll(buf)
-		if err != nil {
-			return nil, err
-		}
-		res[partial] = string(str)
+		res[partial] = buf
 	}
 
 	return res, nil

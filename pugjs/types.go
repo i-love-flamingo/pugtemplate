@@ -509,6 +509,19 @@ func (m *Map) Member(field string) Object {
 	if i, ok := m.Items[String(strings.Title(field))]; ok {
 		return i
 	}
+
+	field = strings.NewReplacer("id", "ID", "url", "URL", "api", "API").Replace(field)
+
+	if i, ok := m.Items[String(field)]; ok {
+		return i
+	}
+	if i, ok := m.Items[String(upperFirst(field))]; ok {
+		return i
+	}
+	if i, ok := m.Items[String(strings.Title(field))]; ok {
+		return i
+	}
+
 	return Nil{}
 }
 
