@@ -859,6 +859,13 @@ func (s *state) validateType(value reflect.Value, typ reflect.Type) reflect.Valu
 			value = value.Addr()
 		default:
 			if m, ok := value.Interface().(*Map); ok {
+				if typ.Kind() == reflect.Map {
+					if typ == reflect.TypeOf(map[string]string{}) {
+						return s.validateType(reflect.ValueOf(m.AsStringMap()), typ)
+					} else if typ == reflect.TypeOf(map[string]interface{}{}) {
+						return s.validateType(reflect.ValueOf(m.AsStringIfaceMap()), typ)
+					}
+				}
 				return s.validateType(reflect.ValueOf(m.o), typ)
 			}
 			if o, ok := value.Interface().(Object); ok {

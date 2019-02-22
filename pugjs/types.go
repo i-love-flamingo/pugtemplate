@@ -15,6 +15,7 @@ type (
 	Object interface {
 		Member(name string) Object
 		String() string
+		iface() interface{}
 		copy() Object
 	}
 
@@ -223,6 +224,10 @@ func (o *goObj) MarshalJSON() ([]byte, error) {
 	return json.Marshal(o.o)
 }
 
+func (o *goObj) iface() interface{} {
+	return o.o
+}
+
 func (o *goObj) Member(name string) Object {
 	if o.v.Kind() == reflect.Struct {
 		if f := o.v.FieldByName(upperFirst(name)); f.IsValid() {
@@ -320,6 +325,7 @@ func (f *Func) Member(name string) Object { return Nil{} }          // Member ge
 func (f *Func) String() string            { return f.fnc.String() } // String formatter
 func (f *Func) True() bool                { return true }           // True getter
 func (f *Func) copy() Object              { return &(*f) }
+func (f *Func) iface() interface{}        { return f.fnc.Interface() }
 
 var AllowDeep = true
 
@@ -344,6 +350,8 @@ type Array struct {
 func (a *Array) Items() []Object {
 	return a.items
 }
+
+func (a *Array) iface() interface{} { return a.o }
 
 // String formatter
 func (a *Array) String() string {
@@ -460,6 +468,8 @@ type Map struct {
 	order []Object
 }
 
+func (m *Map) iface() interface{} { return m.o }
+
 // AsStringMap helper
 func (m *Map) AsStringMap() map[string]string {
 	stringMap := make(map[string]string)
@@ -467,6 +477,15 @@ func (m *Map) AsStringMap() map[string]string {
 		stringMap[key.String()] = value.String()
 	}
 	return stringMap
+}
+
+// AsStringIfaceMap helper
+func (m *Map) AsStringIfaceMap() map[string]interface{} {
+	iMap := make(map[string]interface{})
+	for key, value := range m.Items {
+		iMap[key.String()] = value.iface()
+	}
+	return iMap
 }
 
 // String formatter
@@ -564,6 +583,8 @@ type String string
 // String formatter
 func (s String) String() string { return string(s) }
 
+func (s String) iface() interface{} { return s }
+
 // Member getter
 func (s String) Member(field string) Object {
 	switch field {
@@ -644,6 +665,7 @@ type Number float64
 func (n Number) Member(string) Object { return Nil{} }                             // Member getter
 func (n Number) String() string       { return big.NewFloat(float64(n)).String() } // String formatter
 func (n Number) copy() Object         { return n }
+func (n Number) iface() interface{}   { return n }
 
 // Bool type
 type Bool bool
@@ -652,6 +674,7 @@ func (b Bool) Member(string) Object { return Nil{} }                      // Mem
 func (b Bool) String() string       { return fmt.Sprintf("%v", bool(b)) } // String formatter
 func (b Bool) True() bool           { return bool(b) }                    // True getter
 func (b Bool) copy() Object         { return b }
+func (b Bool) iface() interface{}   { return b }
 
 // Nil type
 type Nil struct{}
@@ -661,3 +684,4 @@ func (n Nil) String() string               { return "" }                  // Str
 func (n Nil) MarshalJSON() ([]byte, error) { return []byte("null"), nil } // MarshalJSON
 func (n Nil) True() bool                   { return false }               // True is always false
 func (n Nil) copy() Object                 { return Nil{} }
+func (n Nil) iface() interface{}           { return nil }
