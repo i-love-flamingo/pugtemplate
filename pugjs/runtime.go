@@ -293,6 +293,9 @@ func runtimeAdd(l, r interface{}) Object {
 			f, _ := strconv.ParseFloat(y.String(), 64)
 			return Number(float64(x) + f)
 		}
+
+	case Object:
+		return String(x.String() + y.String())
 	}
 	return Nil{}
 }
