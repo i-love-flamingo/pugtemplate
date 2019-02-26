@@ -396,9 +396,10 @@ func (m *Map) AsStringMap() map[string]string {
 
 // AsStringIfaceMap helper
 func (m *Map) AsStringIfaceMap() map[string]interface{} {
+	m.convert()
 	iMap := make(map[string]interface{})
-	for key, value := range m.Items {
-		iMap[key.String()] = value.iface()
+	for key, value := range m.items {
+		iMap[key] = value.iface()
 	}
 	return iMap
 }
@@ -454,13 +455,13 @@ func (m *Map) Member(field string) Object {
 
 	field = strings.NewReplacer("id", "ID", "url", "URL", "api", "API").Replace(field)
 
-	if i, ok := m.Items[String(field)]; ok {
+	if i, ok := m.items[field]; ok {
 		return i
 	}
-	if i, ok := m.Items[String(upperFirst(field))]; ok {
+	if i, ok := m.items[upperFirst(field)]; ok {
 		return i
 	}
-	if i, ok := m.Items[String(strings.Title(field))]; ok {
+	if i, ok := m.items[strings.Title(field)]; ok {
 		return i
 	}
 
