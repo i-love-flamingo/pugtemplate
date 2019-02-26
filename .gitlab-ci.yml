@@ -1,0 +1,34 @@
+stages:
+- prepare
+- test
+
+.init:
+  stage: test
+  image: iloveflamingo/buildenv:1.11
+  cache:
+    paths:
+    - __gopath/pkg/mod
+  before_script:
+  - export GOPATH="$(pwd -P)/__gopath"
+
+cover:
+  extends: .init
+  script:
+  - go test -coverprofile cover.out ./...
+  - go tool cover -func cover.out
+
+test:
+  extends: .init
+  script:
+  - go test -race ./...
+
+static-check:
+  extends: .init
+  script:
+  - golint -set_exit_status ./...
+  - go vet ./...
+
+vet flamingo:
+  extends: .init
+  script:
+  - go test -vet 'all' -race ./...
