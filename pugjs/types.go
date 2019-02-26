@@ -180,11 +180,17 @@ type Func struct {
 	fnc reflect.Value
 }
 
-func (f *Func) Member(name string) Object { return Nil{} }          // Member getter
-func (f *Func) String() string            { return f.fnc.String() } // String formatter
-func (f *Func) True() bool                { return true }           // True getter
-func (f *Func) copy() Object              { return &(*f) }
-func (f *Func) iface() interface{}        { return f.fnc.Interface() }
+// Member getter
+func (f *Func) Member(name string) Object { return Nil{} }
+
+// String formatter
+func (f *Func) String() string { return f.fnc.String() }
+
+// True getter
+func (f *Func) True() bool { return true }
+
+func (f *Func) copy() Object       { return &(*f) }
+func (f *Func) iface() interface{} { return f.fnc.Interface() }
 
 var AllowDeep = true
 
@@ -423,7 +429,14 @@ func (m *Map) String() string {
 func (m *Map) Assign(key string, field Object) {
 	m.convert()
 	m.items[key] = field
-	m.o = m.items
+}
+
+// HasMember checks if a member exists
+func (m *Map) HasMember(field string) bool {
+	m.convert()
+	_, hasMember := m.items[field]
+
+	return hasMember
 }
 
 // Member getter

@@ -368,8 +368,8 @@ func (s *state) walkRange(dot reflect.Value, r *parse.RangeNode) {
 				// ordered map?
 				if len(obj.order) > 0 {
 					for _, index := range obj.order {
-						if val := obj.Member(index); (val != Nil{}) {
-							oneIteration(reflect.ValueOf(index), reflect.ValueOf(val))
+						if obj.HasMember(index) {
+							oneIteration(reflect.ValueOf(index), reflect.ValueOf(obj.Member(index)))
 						}
 					}
 
@@ -888,11 +888,11 @@ func (s *state) validateType(value reflect.Value, typ reflect.Type) reflect.Valu
 			if a, ok := value.Interface().(*Array); ok {
 				return s.validateType(reflect.ValueOf(a.o), typ)
 			}
-			//before failing see if we can make it to a string
+			// before failing see if we can make it to a string
 			switch typ.Kind() {
 			case reflect.String:
-				if string, ok := value.Interface().(fmt.Stringer); ok {
-					return reflect.ValueOf(string.String())
+				if str, ok := value.Interface().(fmt.Stringer); ok {
+					return reflect.ValueOf(str.String())
 				}
 			}
 
