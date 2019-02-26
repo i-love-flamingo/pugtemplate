@@ -37,7 +37,7 @@ func TestJsObject(t *testing.T) {
 	).(*pugjs.Map)
 
 	object.Assign(m, m2, m3)
-	assert.Equal(t, mx.Keys(), m.Keys(), "map keys not equal")
+	assert.Len(t, m.Keys(), len(mx.Keys()), "number of keys is not equal")
 	for _, expected := range mx.Keys() {
 		assert.Equal(t, mx.Member(expected), m.Member(expected), "value of for key %q is not equal", expected)
 	}
