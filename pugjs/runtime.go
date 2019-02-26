@@ -82,7 +82,9 @@ var funcmap = FuncMap{
 	"__range_helper__": func(o Object) interface{} {
 		switch o := o.(type) {
 		case *Map:
-			return o.Items
+			o.convert()
+
+			return o.items
 		case *Array:
 			return o.items
 		case String:
@@ -94,7 +96,7 @@ var funcmap = FuncMap{
 		var res []interface{}
 		switch o := o.(type) {
 		case *Map:
-			for k := range o.Items {
+			for k := range o.Keys() {
 				res = append(res, k)
 			}
 		case *Array:
@@ -118,13 +120,13 @@ var funcmap = FuncMap{
 	"__op__array": func(a ...interface{}) Object { return convert(a) },
 	"__op__map": func(a ...interface{}) Object {
 		m := &Map{
-			Items: make(map[Object]Object, len(a)/2),
-			order: make([]Object, 0, len(a)/2),
+			items: make(map[string]Object, len(a)/2),
+			order: make([]string, 0, len(a)/2),
 		}
 
 		for i := 0; i < len(a); i += 2 {
-			m.Items[convert(a[i])] = convert(a[i+1])
-			m.order = append(m.order, convert(a[i]))
+			m.items[convert(a[i]).String()] = convert(a[i+1])
+			m.order = append(m.order, convert(a[i]).String())
 		}
 		return m
 	},
@@ -151,10 +153,10 @@ var funcmap = FuncMap{
 		if v, ok := v.(bool); ok {
 			return []Attribute{{Name: k, BoolVal: &v}}
 		}
-		//if _, ok := v.(Nil); ok {
-		//	b := false
-		//	return []Attribute{{Name: k, BoolVal: &b}}
-		//}
+		// if _, ok := v.(Nil); ok {
+		// 	b := false
+		// 	return []Attribute{{Name: k, BoolVal: &b}}
+		// }
 		if v, ok := v.(Object); ok {
 			return []Attribute{{Name: k, Val: JavaScriptExpression(v.String()), MustEscape: e}}
 		}
@@ -182,36 +184,19 @@ var funcmap = FuncMap{
 				var mustEscape bool
 				var att tmpattr
 
-				if UseGoObject {
-					name = attr.(*goObj).Member("name").String()
-					mustEscape = bool(attr.(*goObj).Member("mustEscape").(Bool))
-					att.mustEscape = mustEscape
-					if _, ok := attr.(*goObj).Member("boolVal").(Bool); attr.(*goObj).Member("boolVal") != nil && ok {
-						b := attr.(*goObj).Member("boolVal").(Bool).True()
-						att.bool = &b
-						if mustEscape {
-							val = name
-						} else {
-							val = `"` + name + `"`
-						}
+				name = string(attr.(*Map).Member("name").(String))
+				mustEscape = bool(attr.(*Map).Member("mustEscape").(Bool))
+				att.mustEscape = mustEscape
+				if _, ok := attr.(*Map).Member("boolVal").(Bool); attr.(*Map).Member("boolVal") != nil && ok {
+					b := attr.(*Map).Member("boolVal").(Bool).True()
+					att.bool = &b
+					if mustEscape {
+						val = name
 					} else {
-						val = attr.(*goObj).Member("val").String()
+						val = `"` + name + `"`
 					}
 				} else {
-					name = string(attr.(*Map).Items[String("name")].(String))
-					mustEscape = bool(attr.(*Map).Items[String("mustEscape")].(Bool))
-					att.mustEscape = mustEscape
-					if _, ok := attr.(*Map).Items[String("boolVal")].(Bool); attr.(*Map).Items[String("boolVal")] != nil && ok {
-						b := attr.(*Map).Items[String("boolVal")].(Bool).True()
-						att.bool = &b
-						if mustEscape {
-							val = name
-						} else {
-							val = `"` + name + `"`
-						}
-					} else {
-						val = string(attr.(*Map).Items[String("val")].(String))
-					}
+					val = string(attr.(*Map).Member("val").(String))
 				}
 
 				att.val = val
@@ -254,12 +239,12 @@ var funcmap = FuncMap{
 		return
 	},
 	"__and_attrs": func(x *Map) (res []Attribute) {
-		for k, v := range x.Items {
-			if b, ok := v.(Bool); ok {
+		for _, k := range x.Keys() {
+			if b, ok := x.Member(k).(Bool); ok {
 				boolval := b.True()
-				res = append(res, Attribute{Name: k.String(), Val: JavaScriptExpression(v.String()), MustEscape: true, BoolVal: &boolval})
+				res = append(res, Attribute{Name: k, Val: JavaScriptExpression(x.Member(k).String()), MustEscape: true, BoolVal: &boolval})
 			} else {
-				res = append(res, Attribute{Name: k.String(), Val: JavaScriptExpression(v.String()), MustEscape: true})
+				res = append(res, Attribute{Name: k, Val: JavaScriptExpression(x.Member(k).String()), MustEscape: true})
 			}
 		}
 		return

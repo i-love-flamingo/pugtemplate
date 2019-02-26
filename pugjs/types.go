@@ -8,8 +8,6 @@ import (
 	"strings"
 )
 
-var UseGoObject = false
-
 type (
 	// Object describes a pugjs JavaScript object
 	Object interface {
@@ -31,29 +29,6 @@ type (
 // Convert an object
 func Convert(in interface{}) Object {
 	return convert(in)
-}
-
-type proxy struct {
-	o reflect.Value
-	m *Map
-}
-
-func (p *proxy) Member(name string) Object {
-	if p.m == nil {
-		p.m = convert(p.o).(*Map)
-	}
-	return p.m.Member(name)
-}
-
-func (p *proxy) String() string {
-	if p.m == nil {
-		p.m = convert(p.o).(*Map)
-	}
-	return p.m.String()
-}
-
-func (p *proxy) copy() Object {
-	return &proxy{o: p.o}
 }
 
 func convert(in interface{}) Object {
@@ -99,65 +74,28 @@ func convert(in interface{}) Object {
 
 	case reflect.Map:
 		newMap := &Map{
-			Items: make(map[Object]Object, val.Len()),
+			items: make(map[string]Object, val.Len()),
 			o:     val.Interface(),
 		}
 		for _, k := range val.MapKeys() {
-			newMap.Items[convert(k)] = convert(val.MapIndex(k))
+			newMap.items[k.String()] = convert(val.MapIndex(k))
 		}
 
 		if sortable, ok := val.Interface().(sortable); ok {
 			order := sortable.Order()
-			newMap.order = make([]Object, len(order))
+			newMap.order = make([]string, len(order))
 			for i, o := range order {
-				newMap.order[i] = String(o)
+				newMap.order[i] = o
 			}
 		}
 
 		return newMap
 
 	case reflect.Struct:
-		if UseGoObject {
-			if !val.CanAddr() {
-				return &goObj{
-					o: val.Interface(),
-					v: val,
-				}
-			}
-
-			return &goObj{
-				o:  val.Interface(),
-				v:  val,
-				va: val.Addr(),
-			}
-		}
-
 		newMap := &Map{
-			Items: make(map[Object]Object, val.Type().NumField()+val.Type().NumMethod()),
-			o:     val.Interface(),
+			o: val.Interface(),
 		}
-
-		for i := 0; i < val.NumField(); i++ {
-			if val.Field(i).CanInterface() {
-				if val.Field(i).Kind() == reflect.Struct {
-					newMap.Items[String(lowerFirst(val.Type().Field(i).Name))] = &proxy{o: val.Field(i)}
-				} else {
-					newMap.Items[String(lowerFirst(val.Type().Field(i).Name))] = convert(val.Field(i))
-				}
-			}
-		}
-
-		for i := 0; i < val.NumMethod(); i++ {
-			newMap.Items[String(lowerFirst(val.Type().Method(i).Name))] = convert(val.Method(i))
-		}
-
-		if sortable, ok := val.Interface().(sortable); ok {
-			order := sortable.Order()
-			newMap.order = make([]Object, len(order))
-			for i, o := range order {
-				newMap.order[i] = String(o)
-			}
-		}
+		// no item conversion here. It will be done on the fly on first member access
 
 		return newMap
 
@@ -165,35 +103,32 @@ func convert(in interface{}) Object {
 		return String(val.String())
 
 	case reflect.Interface:
-		if UseGoObject {
-			return convert(val.Interface())
-		}
 
 		if val.Type().NumMethod() == 0 {
 			return convert(val.Interface())
 		}
 
 		newMap := &Map{
-			Items: make(map[Object]Object, val.Type().NumMethod()),
+			items: make(map[string]Object, val.Type().NumMethod()),
 			o:     val.Interface(),
 		}
 		if !val.IsNil() {
 			for i := 0; i < val.NumMethod(); i++ {
-				newMap.Items[String(lowerFirst(val.Type().Method(i).Name))] = convert(val.Method(i))
+				newMap.items[lowerFirst(val.Type().Method(i).Name)] = convert(val.Method(i))
 			}
 
 			if m, ok := convert(val.Interface()).(*Map); ok {
-				for k, v := range m.Items {
-					newMap.Items[k] = v
+				for k, v := range m.items {
+					newMap.items[k] = v
 				}
 			}
 		}
 
 		if sortable, ok := val.Interface().(sortable); ok {
 			order := sortable.Order()
-			newMap.order = make([]Object, len(order))
+			newMap.order = make([]string, len(order))
 			for i, o := range order {
-				newMap.order[i] = String(o)
+				newMap.order[i] = o
 			}
 		}
 
@@ -219,7 +154,7 @@ func convert(in interface{}) Object {
 			newVal := convert(val.Elem())
 			if m, ok := newVal.(*Map); ok {
 				for i := 0; i < val.NumMethod(); i++ {
-					m.Items[String(lowerFirst(val.Type().Method(i).Name))] = convert(val.Method(i))
+					m.Assign(lowerFirst(val.Type().Method(i).Name), convert(val.Method(i)))
 				}
 			}
 			return newVal
@@ -238,109 +173,6 @@ func convert(in interface{}) Object {
 	}
 
 	panic(fmt.Sprintf("Cannot convert %#v %T %s %s", val, val, val.Type(), val.Kind()))
-}
-
-type goObj struct {
-	o  interface{}
-	v  reflect.Value
-	va reflect.Value
-}
-
-// MarshalJSON implementation
-func (o *goObj) MarshalJSON() ([]byte, error) {
-	return json.Marshal(o.o)
-}
-
-func (o *goObj) iface() interface{} {
-	return o.o
-}
-
-func (o *goObj) Member(name string) Object {
-	if o.v.Kind() == reflect.Struct {
-		if f := o.v.FieldByName(upperFirst(name)); f.IsValid() {
-			return convert(f)
-		}
-
-		if f := o.v.FieldByName(strings.Title(name)); f.IsValid() {
-			return convert(f)
-		}
-
-		//for i := 0; i < o.v.NumField(); i++ {
-		//	log.Print(o.v.Type().Field(i).Name, o.v.Field(i).String())
-		//}
-	}
-
-	if f := o.v.MethodByName(upperFirst(name)); f.IsValid() {
-		return convert(f)
-	}
-
-	if f := o.v.MethodByName(strings.Title(name)); f.IsValid() {
-		return convert(f)
-	}
-
-	//for i := 0; i < o.v.NumMethod(); i++ {
-	//	log.Print(o.v.Type().Method(i).Name, o.v.Method(i).String())
-	//}
-
-	if o.va.IsValid() {
-
-		if o.va.Kind() == reflect.Struct {
-			if f := o.va.FieldByName(upperFirst(name)); f.IsValid() {
-				return convert(f)
-			}
-
-			if f := o.va.FieldByName(strings.Title(name)); f.IsValid() {
-				return convert(f)
-			}
-
-			//for i := 0; i < o.va.NumField(); i++ {
-			//	log.Print(o.va.Type().Field(i).Name, o.va.Field(i).String())
-			//}
-		}
-
-		if f := o.va.MethodByName(upperFirst(name)); f.IsValid() {
-			return convert(f)
-		}
-
-		if f := o.va.MethodByName(strings.Title(name)); f.IsValid() {
-			return convert(f)
-		}
-
-		//for i := 0; i < o.va.NumMethod(); i++ {
-		//	log.Print(o.va.Type().Method(i).Name, o.va.Method(i).String())
-		//}
-
-	}
-
-	//if f := o.v.FieldByName(name); f.IsValid() {
-	//return convert(f)
-	//}
-
-	//if f := o.v.MethodByName(name); f.IsValid() {
-	//return convert(f)
-	//}
-
-	//return Nil{}
-	panic(name + " not found in " + fmt.Sprintf("%#v", o.o))
-}
-
-func (o *goObj) String() string {
-	if s, ok := o.o.(fmt.Stringer); ok {
-		return s.String()
-	}
-	return o.v.String()
-}
-
-func (o *goObj) copy() Object {
-	n := o.v.Interface()
-	return &goObj{
-		o: n,
-		v: reflect.ValueOf(n),
-	}
-}
-
-func (o *goObj) True() bool {
-	return true
 }
 
 // Func type
@@ -490,19 +322,75 @@ func (a *Array) copy() Object {
 
 // Map type
 type Map struct {
-	Items map[Object]Object
+	items map[string]Object
 	o     interface{}
-	order []Object
+	order []string
+}
+
+func (m *Map) convert() {
+	if m.items != nil {
+		return
+	}
+
+	val, ok := m.o.(reflect.Value)
+	if !ok {
+		val = reflect.ValueOf(m.o)
+	}
+
+	m.items = make(map[string]Object, val.Type().NumField()+val.Type().NumMethod())
+
+	for i := 0; i < val.NumField(); i++ {
+		if val.Field(i).CanInterface() {
+			m.items[lowerFirst(val.Type().Field(i).Name)] = convert(val.Field(i))
+		}
+	}
+
+	for i := 0; i < val.NumMethod(); i++ {
+		m.items[lowerFirst(val.Type().Method(i).Name)] = convert(val.Method(i))
+	}
+
+	if sortable, ok := val.Interface().(sortable); ok {
+		order := sortable.Order()
+		m.order = make([]string, len(order))
+		for i, o := range order {
+			m.order[i] = o
+		}
+	}
+}
+
+func (m *Map) ValueOf() reflect.Value {
+	m.convert()
+
+	return reflect.ValueOf(m.items)
+}
+
+// Keys returns all map keys
+func (m *Map) Keys() []string {
+	m.convert()
+	if len(m.order) > 0 {
+		return m.order
+	}
+
+	result := make([]string, len(m.items))
+	i := 0
+	for key := range m.items {
+		result[i] = key
+		i = i + 1
+	}
+
+	return result
 }
 
 func (m *Map) iface() interface{} { return m.o }
 
 // AsStringMap helper
 func (m *Map) AsStringMap() map[string]string {
+	m.convert()
 	stringMap := make(map[string]string)
-	for key, value := range m.Items {
-		stringMap[key.String()] = value.String()
+	for key, value := range m.items {
+		stringMap[key] = value.String()
 	}
+
 	return stringMap
 }
 
@@ -530,29 +418,37 @@ func (m *Map) String() string {
 	return string(b)
 }
 
+// Assign a new item to the key
+func (m *Map) Assign(key string, field Object) {
+	m.convert()
+	m.items[key] = field
+	m.o = m.items
+}
+
 // Member getter
 func (m *Map) Member(field string) Object {
+	m.convert()
 	if field == "__assign" {
 		return &Func{fnc: reflect.ValueOf(func(k, v interface{}) Object {
 			// if we have a ordered map we need to append to not lose it
 			// this is only allowed to happen if we have an ordered list, otherwise we would
 			// bring partial order into an unordered list.
 			key := convert(k)
-			if _, ok := m.Items[key]; len(m.order) > 0 && !ok {
-				m.order = append(m.order, key)
+			if _, ok := m.items[key.String()]; len(m.order) > 0 && !ok {
+				m.order = append(m.order, key.String())
 			}
-			m.Items[key] = convert(v)
+			m.items[key.String()] = convert(v)
 			return Nil{}
 		})}
 	}
 
-	if i, ok := m.Items[String(field)]; ok {
+	if i, ok := m.items[field]; ok {
 		return i
 	}
-	if i, ok := m.Items[String(upperFirst(field))]; ok {
+	if i, ok := m.items[upperFirst(field)]; ok {
 		return i
 	}
-	if i, ok := m.Items[String(strings.Title(field))]; ok {
+	if i, ok := m.items[strings.Title(field)]; ok {
 		return i
 	}
 
@@ -576,9 +472,10 @@ func (m *Map) MarshalJSON() ([]byte, error) {
 	if s, ok := m.o.(json.Marshaler); ok {
 		return s.MarshalJSON()
 	}
-	tmp := make(map[string]interface{}, len(m.Items))
-	for k, v := range m.Items {
-		tmp[lowerFirst(k.String())] = v
+	m.convert()
+	tmp := make(map[string]interface{}, len(m.items))
+	for k, v := range m.items {
+		tmp[lowerFirst(k)] = v
 	}
 	return json.Marshal(tmp)
 }
@@ -588,17 +485,17 @@ func (m *Map) True() bool {
 	if m.o != nil && reflect.DeepEqual(reflect.Zero(reflect.TypeOf(m.o)).Interface(), m.o) {
 		return false
 	}
-	return len(m.Items) > 0
+	return len(m.items) > 0
 }
 
 func (m *Map) copy() Object {
 	c := &Map{
-		Items: make(map[Object]Object, len(m.Items)),
+		items: make(map[string]Object, len(m.items)),
 		o:     m.o,
 	}
 
-	for k, v := range m.Items {
-		c.Items[k.copy()] = v.copy()
+	for k, v := range m.items {
+		c.items[k] = v.copy()
 	}
 
 	return c

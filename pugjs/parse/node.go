@@ -564,18 +564,18 @@ func (t *Tree) newNumber(pos Pos, text string, typ itemType) (*NumberNode, error
 	n := &NumberNode{tr: t, NodeType: NodeNumber, Pos: pos, Text: text}
 	switch typ {
 	case itemCharConstant:
-		rune, _, tail, err := strconv.UnquoteChar(text[1:], text[0])
+		runeValue, _, tail, err := strconv.UnquoteChar(text[1:], text[0])
 		if err != nil {
 			return nil, err
 		}
 		if tail != "'" {
 			return nil, fmt.Errorf("malformed character constant: %s", text)
 		}
-		n.Int64 = int64(rune)
+		n.Int64 = int64(runeValue)
 		n.IsInt = true
-		n.Uint64 = uint64(rune)
+		n.Uint64 = uint64(runeValue)
 		n.IsUint = true
-		n.Float64 = float64(rune) // odd but those are the rules.
+		n.Float64 = float64(runeValue) // odd but those are the rules.
 		n.IsFloat = true
 		return n, nil
 	case itemComplex:

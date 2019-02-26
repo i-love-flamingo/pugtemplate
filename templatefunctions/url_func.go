@@ -23,14 +23,14 @@ func (u *URLFunc) Func(ctx context.Context) interface{} {
 		if where == "" {
 			q := request.Request().URL.Query()
 			if len(params) == 1 {
-				for k, v := range params[0].Items {
-					q.Del(k.String())
-					if arr, ok := v.(*pugjs.Array); ok {
+				for _, k := range params[0].Keys() {
+					q.Del(k)
+					if arr, ok := params[0].Member(k).(*pugjs.Array); ok {
 						for _, i := range arr.Items() {
-							q.Add(k.String(), i.String())
+							q.Add(k, i.String())
 						}
-					} else if v.String() != "" {
-						q.Set(k.String(), v.String())
+					} else if params[0].Member(k).String() != "" {
+						q.Set(k, params[0].Member(k).String())
 					}
 				}
 			}
@@ -40,13 +40,13 @@ func (u *URLFunc) Func(ctx context.Context) interface{} {
 		var p = make(map[string]string)
 		var q = make(map[string][]string)
 		if len(params) == 1 {
-			for k, v := range params[0].Items {
-				if arr, ok := v.(*pugjs.Array); ok {
+			for _, k := range params[0].Keys() {
+				if arr, ok := params[0].Member(k).(*pugjs.Array); ok {
 					for _, i := range arr.Items() {
-						q[k.String()] = append(q[k.String()], i.String())
+						q[k] = append(q[k], i.String())
 					}
 				} else {
-					p[k.String()] = v.String()
+					p[k] = params[0].Member(k).String()
 				}
 			}
 		}

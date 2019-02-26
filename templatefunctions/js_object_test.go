@@ -14,30 +14,30 @@ func TestJsObject(t *testing.T) {
 
 	object := jsObject.Func(context.Background()).(func() Object)()
 
-	m := &pugjs.Map{
-		Items: make(map[pugjs.Object]pugjs.Object),
-	}
-	m2 := &pugjs.Map{
-		Items: map[pugjs.Object]pugjs.Object{
-			pugjs.String("foo"): pugjs.String("bar"),
-			pugjs.String("asd"): pugjs.String("dsa"),
-		},
-	}
-	m3 := &pugjs.Map{
-		Items: map[pugjs.Object]pugjs.Object{
-			pugjs.String("foo"): pugjs.String("bbb"),
-		},
-	}
+	m := pugjs.Convert(make(map[pugjs.Object]pugjs.Object)).(*pugjs.Map)
 
-	mx := &pugjs.Map{
-		Items: map[pugjs.Object]pugjs.Object{
-			pugjs.String("foo"): pugjs.String("bbb"),
-			pugjs.String("asd"): pugjs.String("dsa"),
+	m2 := pugjs.Convert(
+		map[string]pugjs.Object{
+			"foo": pugjs.String("bar"),
+			"asd": pugjs.String("dsa"),
 		},
-	}
+	).(*pugjs.Map)
+
+	m3 := pugjs.Convert(
+		map[string]pugjs.Object{
+			"foo": pugjs.String("bbb"),
+		},
+	).(*pugjs.Map)
+
+	mx := pugjs.Convert(
+		map[string]pugjs.Object{
+			"foo": pugjs.String("bbb"),
+			"asd": pugjs.String("dsa"),
+		},
+	).(*pugjs.Map)
 
 	object.Assign(m, m2, m3)
-	assert.Equal(t, mx, m)
+	assert.Equal(t, mx, m, "keys not assigned correctly")
 
 	arr := object.Keys(mx)
 	assert.Equal(t, "asd, foo", arr.Join(", ").String())

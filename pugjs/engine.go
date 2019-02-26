@@ -228,10 +228,10 @@ func (e *Engine) Render(ctx context.Context, templateName string, data interface
 
 	span.Annotate(nil, templateName)
 
-	//block if buffered channel size is reached
+	// block if buffered channel size is reached
 	renderChan <- struct{}{}
 	defer func() {
-		//release one entry from channel (will release one block)
+		// release one entry from channel (will release one block)
 		<-renderChan
 	}()
 

@@ -155,7 +155,7 @@ func index(item reflect.Value, indices ...reflect.Value) (reflect.Value, error) 
 	if obj, ok := item.Interface().(*Array); ok {
 		v = reflect.ValueOf(obj.items)
 	} else if obj, ok := item.Interface().(*Map); ok {
-		v = reflect.ValueOf(obj.Items)
+		v = obj.ValueOf()
 	} else if obj, ok := item.Interface().(String); ok {
 		v = reflect.ValueOf(string(obj))
 	} else if _, ok := item.Interface().(Nil); ok {
@@ -175,17 +175,17 @@ func index(item reflect.Value, indices ...reflect.Value) (reflect.Value, error) 
 			index = indirectInterface(i)
 		}
 
-		//if obj, ok := v.Interface().(*Array); ok {
-		//	v = reflect.ValueOf(obj.items)
-		//} else if obj, ok := v.Interface().(*Map); ok {
-		//	v = reflect.ValueOf(obj.DecoratedItems)
-		//} else if obj, ok := v.Interface().(String); ok {
-		//	v = reflect.ValueOf(string(obj))
-		//}
-
-		//if _, ok := v.Interface().(Nil); ok {
-		//	return reflect.ValueOf(nil), nil
-		//}
+		// if obj, ok := v.Interface().(*Array); ok {
+		// 	v = reflect.ValueOf(obj.items)
+		// } else if obj, ok := v.Interface().(*Map); ok {
+		// 	v = reflect.ValueOf(obj.DecoratedItems)
+		// } else if obj, ok := v.Interface().(String); ok {
+		// 	v = reflect.ValueOf(string(obj))
+		// }
+		//
+		// if _, ok := v.Interface().(Nil); ok {
+		// 	return reflect.ValueOf(nil), nil
+		// }
 
 		var isNil bool
 		if v, isNil = indirect(v); isNil {
@@ -210,7 +210,7 @@ func index(item reflect.Value, indices ...reflect.Value) (reflect.Value, error) 
 				}
 			}
 			if x < 0 || x >= int64(v.Len()) {
-				//return reflect.Value{}, fmt.Errorf("index out of range: %d", x)
+				// return reflect.Value{}, fmt.Errorf("index out of range: %d", x)
 				return reflect.ValueOf(Nil{}), nil
 			}
 			v = v.Index(int(x))

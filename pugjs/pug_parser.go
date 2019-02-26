@@ -88,12 +88,12 @@ func (p *renderState) ParseJSON(bytes []byte, file string) (*Token, error) {
 
 // TokenToTemplate gets named Template from Token
 func (p *renderState) TokenToTemplate(name string, t *Token) (*Template, string, error) {
-	//writeTranslations, _ = os.Create("/tmp/en-nz.page-" + strings.Replace(name, "/", "-", -1) + ".json")
-	//fmt.Fprintf(writeTranslations, "[\n")
-	//defer func() {
-	//	fmt.Fprintf(writeTranslations, "{}]\n")
-	//	writeTranslations.(*os.File).Close()
-	//}()
+	// writeTranslations, _ = os.Create("/tmp/en-nz.page-" + strings.Replace(name, "/", "-", -1) + ".json")
+	// fmt.Fprintf(writeTranslations, "[\n")
+	// defer func() {
+	// 	fmt.Fprintf(writeTranslations, "{}]\n")
+	// 	writeTranslations.(*os.File).Close()
+	// }()
 
 	template := New(name).
 		Funcs(funcmap).
@@ -128,9 +128,8 @@ func (p *renderState) TokenToTemplate(name string, t *Token) (*Template, string,
 		if _, ok := p.mixin[call]; !ok {
 			if p.debug {
 				return nil, "", fmt.Errorf("mixin %q called but not found", call)
-			} else {
-				p.logger.Warn(fmt.Sprintf("mixin %q called but not found", call))
 			}
+			p.logger.Warn(fmt.Sprintf("mixin %q called but not found", call))
 		}
 	}
 

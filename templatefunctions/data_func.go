@@ -19,8 +19,8 @@ func (g *DataFunc) Func(ctx context.Context) interface{} {
 	return func(what string, params ...*pugjs.Map) interface{} {
 		var p = make(map[interface{}]interface{})
 		if len(params) == 1 {
-			for k, v := range params[0].Items {
-				p[k.String()] = v.String()
+			for _, k := range params[0].Keys() {
+				p[k] = params[0].Member(k).String()
 			}
 		}
 		return g.Router.Data(ctx, what, p)

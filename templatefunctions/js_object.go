@@ -27,8 +27,8 @@ func (ol JsObject) Func(ctx context.Context) interface{} {
 func (o Object) Assign(target *pugjs.Map, sources ...*pugjs.Map) pugjs.Object {
 	for _, source := range sources {
 		if source != nil {
-			for k, v := range source.Items {
-				target.Items[k] = v
+			for _, k := range source.Keys() {
+				target.Assign(k, source.Member(k))
 			}
 		}
 	}
@@ -45,8 +45,8 @@ func (o Object) Keys(obj interface{}) *pugjs.Array {
 	var tmp []string
 
 	if m, ok := obj.(*pugjs.Map); ok {
-		for k := range m.Items {
-			tmp = append(tmp, k.String())
+		for _, k := range m.Keys() {
+			tmp = append(tmp, k)
 		}
 	} else if a, ok := obj.(*pugjs.Array); ok {
 		for i := 0; i < int(a.Length().(pugjs.Number)); i++ {

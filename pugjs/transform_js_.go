@@ -166,8 +166,8 @@ func (p *renderState) renderStatement(stmt ast.Statement, wrap bool, dot bool) s
 		finalexpr += p.renderStatement(expr.Body, true, true)
 		finalexpr += `{{ end }}`
 
-	//case *ast.BranchStatement:
-	//	finalexpr = `{{ if `
+	// case *ast.BranchStatement:
+	// 	finalexpr = `{{ if `
 
 	// we cannot deal with other expressions at the moment, and we don'e expect them ayway
 	default:
@@ -218,7 +218,7 @@ func (p *renderState) exprToString(expr ast.Expression) string {
 
 	default:
 		return fmt.Sprintf("%#v", expr)
-		//panic(0)
+		// panic(0)
 	}
 }
 
@@ -350,7 +350,7 @@ func (p *renderState) renderExpression(expr ast.Expression, wrap bool, dot bool)
 	// CallExpression: calls a function (Callee) with arguments, e.g. url("target", "arg1", 1)
 	case *ast.CallExpression:
 		if i, ok := expr.Callee.(*ast.Identifier); writeTranslations != nil && ok && i.Name == "__" {
-			//fmt.Fprintln(writeTranslations, p.exprToString(expr))
+			// fmt.Fprintln(writeTranslations, p.exprToString(expr))
 			switch len(expr.ArgumentList) {
 			case 1:
 				fmt.Fprintf(writeTranslations, `{

@@ -63,8 +63,8 @@ func (s *state) mark() int {
 
 // pop pops the variable stack up to the mark.
 func (s *state) pop(mark int) {
-	//log.Println("popping", s.vars[mark:])
-	//s.vars = s.vars[0:mark]
+	// log.Println("popping", s.vars[mark:])
+	// s.vars = s.vars[0:mark]
 }
 
 // varValue returns the value of the named variable.
@@ -74,7 +74,7 @@ func (s *state) varValue(name string) reflect.Value {
 			return s.vars[i].value
 		}
 	}
-	//s.errorf("undefined variable: %s", name)
+	// s.errorf("undefined variable: %s", name)
 	return zero
 }
 
@@ -123,8 +123,8 @@ func (s *state) errorf(format string, args ...interface{}) {
 	if s.node == nil {
 		format = fmt.Sprintf("template: %s: %s", name, format)
 	} else {
-		location, context := s.tmpl.ErrorContext(s.node)
-		format = fmt.Sprintf("template: %s: executing %q at <%s>: %s", location, name, doublePercent(context), format)
+		location, ctx := s.tmpl.ErrorContext(s.node)
+		format = fmt.Sprintf("template: %s: executing %q at <%s>: %s", location, name, doublePercent(ctx), format)
 	}
 	panic(ExecError{
 		Name: s.tmpl.Name(),
@@ -198,9 +198,7 @@ func (t *Template) execute(ctx context.Context, wr io.Writer, data interface{}) 
 		value = reflect.ValueOf(data)
 	}
 	if d, ok := data.(*Map); ok {
-		value = reflect.ValueOf(d.Items)
-	} else if d, ok := data.(*goObj); ok {
-		value = d.v
+		value = d.ValueOf()
 	}
 
 	state := &state{
@@ -234,13 +232,13 @@ func (t *Template) execute(ctx context.Context, wr io.Writer, data interface{}) 
 		}
 	}
 
-	state.globals = append(state.globals, variable{`$global`, reflect.ValueOf(Object(&Map{Items: make(map[Object]Object, 10)}))})
+	state.globals = append(state.globals, variable{`$global`, reflect.ValueOf(Object(&Map{items: make(map[string]Object, 10)}))})
 
 	for _, v := range state.globals {
 		state.vars = append(state.vars, v)
 	}
 
-	//log.Printf("%v, %v, %T", state.vars, data, data)
+	// log.Printf("%v, %v, %T", state.vars, data, data)
 	state.walk(value, t.Root)
 	return
 }
@@ -255,7 +253,7 @@ func (s *state) walk(dot reflect.Value, node parse.Node) {
 		// Also, if the action declares variables, don'e print the result.
 		val := s.evalPipeline(dot, node.Pipe)
 		if len(node.Pipe.Decl) == 0 {
-			//log.Println(val, node.Pipe)
+			// log.Println(val, node.Pipe)
 			s.printValue(node, val)
 		}
 	case *parse.IfNode:
@@ -282,7 +280,7 @@ func (s *state) walk(dot reflect.Value, node parse.Node) {
 // walkIfOrWith walks an 'if' or 'with' node. The two control structures
 // are identical in behavior except that 'with' sets dot.
 func (s *state) walkIfOrWith(typ parse.NodeType, dot reflect.Value, pipe *parse.PipeNode, list, elseList *parse.ListNode) {
-	//defer s.pop(s.mark())
+	// defer s.pop(s.mark())
 	val := s.evalPipeline(dot, pipe)
 	truth, ok := isTrue(val)
 	if !ok {
@@ -345,7 +343,7 @@ func (s *state) walkRange(dot reflect.Value, r *parse.RangeNode) {
 	}
 	val := s.evalPipeline(dot, r.Pipe)
 	// mark top of stack before any variables in the body are pushed.
-	//mark := s.mark()
+	// mark := s.mark()
 	oneIteration := func(index, elem reflect.Value) {
 		// Set next var (lexically the first if there are two) to the index.
 		if len(r.Pipe.Decl) > 1 {
@@ -355,7 +353,7 @@ func (s *state) walkRange(dot reflect.Value, r *parse.RangeNode) {
 			s.setVarValue(r.Pipe.Decl[0].Ident[0], elem)
 		}
 		s.walk(elem, r.List)
-		//s.pop(mark)
+		// s.pop(mark)
 	}
 
 	if val.IsValid() {
@@ -365,12 +363,12 @@ func (s *state) walkRange(dot reflect.Value, r *parse.RangeNode) {
 				val = reflect.ValueOf(obj.items)
 
 			case *Map:
-				val = reflect.ValueOf(obj.Items)
+				val = obj.ValueOf()
 
 				// ordered map?
 				if len(obj.order) > 0 {
 					for _, index := range obj.order {
-						if val, ok := obj.Items[index]; ok {
+						if val := obj.Member(index); (val != Nil{}) {
 							oneIteration(reflect.ValueOf(index), reflect.ValueOf(val))
 						}
 					}
@@ -448,7 +446,7 @@ func (s *state) walkTemplate(dot reflect.Value, t *parse.TemplateNode) {
 	}
 	tmpl := s.tmpl.tmpl[name]
 	if tmpl == nil {
-		//s.errorf("template %q not defined", name)
+		// s.errorf("template %q not defined", name)
 		return
 	}
 	if s.depth == maxExecDepth {
@@ -507,7 +505,7 @@ func (s *state) evalPipeline(dot reflect.Value, pipe *parse.PipeNode) (value ref
 	}
 	for _, variable := range pipe.Decl {
 		// s.push(variable.Ident[0], value)
-		//log.Println("setting", variable.Ident[0], value)
+		// log.Println("setting", variable.Ident[0], value)
 		s.setVarValue(variable.Ident[0], value)
 	}
 	return value
@@ -642,7 +640,7 @@ func (s *state) evalField(dot reflect.Value, fieldName string, node parse.Node, 
 		return zero
 	}
 
-	//log.Println("evalField", "\n\tdot", dot, "\n\tfieldName", fieldName, "\n\tnode", fmt.Sprintf("%#v", node), "\n\targs", args, "\n\tfinal", final, "\n\treceiver", fmt.Sprintf("%#v", receiver))
+	// log.Println("evalField", "\n\tdot", dot, "\n\tfieldName", fieldName, "\n\tnode", fmt.Sprintf("%#v", node), "\n\targs", args, "\n\tfinal", final, "\n\treceiver", fmt.Sprintf("%#v", receiver))
 
 	if obj, ok := receiver.Interface().(Object); ok {
 		res := reflect.ValueOf(obj.Member(fieldName))
@@ -717,7 +715,7 @@ func (s *state) evalField(dot reflect.Value, fieldName string, node parse.Node, 
 				result = receiver.MapIndex(reflect.ValueOf(strings.Title(name)))
 			}
 			if !result.IsValid() {
-				//s.errorf("map has no entry for key %q", fieldName)
+				// s.errorf("map has no entry for key %q", fieldName)
 				result = zero
 			}
 			return result
@@ -1095,7 +1093,7 @@ func (s *state) printValue(n parse.Node, v reflect.Value) {
 		s.errorf("can'e print %s of type %s", n, v.Type())
 	}
 	if iface == "<no value>" {
-		//log.Println("ERR", n, v)
+		// log.Println("ERR", n, v)
 		fmt.Fprint(s.wr, "ERR", n, v)
 	} else {
 		_, err := fmt.Fprint(s.wr, iface)
