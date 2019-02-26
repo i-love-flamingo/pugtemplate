@@ -24,6 +24,7 @@ test:
 
 static-check:
   extends: .init
+  allow_failure: true
   script:
   - golint -set_exit_status ./...
   - go vet ./...
