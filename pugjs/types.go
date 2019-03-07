@@ -118,6 +118,7 @@ func convert(in interface{}) Object {
 			}
 
 			if m, ok := convert(val.Interface()).(*Map); ok {
+				m.convert()
 				for k, v := range m.items {
 					newMap.items[k] = v
 				}
@@ -127,9 +128,7 @@ func convert(in interface{}) Object {
 		if sortable, ok := val.Interface().(sortable); ok {
 			order := sortable.Order()
 			newMap.order = make([]string, len(order))
-			for i, o := range order {
-				newMap.order[i] = o
-			}
+			copy(newMap.order, order)
 		}
 
 		return newMap
@@ -364,6 +363,8 @@ func (m *Map) convert() {
 	}
 }
 
+// ValueOf returns a new Value initialized to the concrete value
+// stored in the m.items
 func (m *Map) ValueOf() reflect.Value {
 	m.convert()
 
@@ -383,6 +384,8 @@ func (m *Map) Keys() []string {
 		result[i] = key
 		i = i + 1
 	}
+
+	m.order = result
 
 	return result
 }
@@ -429,6 +432,18 @@ func (m *Map) String() string {
 func (m *Map) Assign(key string, field Object) {
 	m.convert()
 	m.items[key] = field
+	if len(m.order) > 0 {
+		found := false
+		for _, k := range m.order {
+			if k == key {
+				found = true
+				break
+			}
+		}
+		if !found {
+			m.order = append(m.order, key)
+		}
+	}
 }
 
 // HasMember checks if a member exists

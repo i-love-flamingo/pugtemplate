@@ -96,7 +96,7 @@ var funcmap = FuncMap{
 		var res []interface{}
 		switch o := o.(type) {
 		case *Map:
-			for k := range o.Keys() {
+			for _, k := range o.Keys() {
 				res = append(res, k)
 			}
 		case *Array:
