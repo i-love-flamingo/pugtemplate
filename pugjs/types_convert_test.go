@@ -180,18 +180,29 @@ func TestConvert(t *testing.T) {
 }
 
 func TestMapParamsConversion(t *testing.T) {
-    m := map[interface{}]interface{}{
-        "foo": "bar",
-    }
+	m := map[interface{}]interface{}{
+		"foo": "bar",
+	}
 
-    cm := convert(m)
+	cm := convert(m)
 
-    var first string
-    for k := range cm.(*Map).items {
-        first = k
-        break
-    }
-    assert.Equal(t, "foo", first)
-    assert.Equal(t, []string{"foo"}, cm.(*Map).Keys())
-    assert.Equal(t, String("bar"), cm.Member("foo"))
+	var first string
+	for k := range cm.(*Map).items {
+		first = k
+		break
+	}
+	assert.Equal(t, "foo", first)
+	assert.Equal(t, []string{"foo"}, cm.(*Map).Keys())
+	assert.Equal(t, String("bar"), cm.Member("foo"))
+}
+
+func TestMapTruer(t *testing.T) {
+	m := struct{ Foo string }{Foo: "test"}
+	cm := convert(m)
+	tt := cm.(*Map).True()
+	assert.True(t, tt)
+
+	m = struct{ Foo string }{}
+	cm = convert(m)
+	assert.False(t, cm.(*Map).True())
 }
