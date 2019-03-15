@@ -178,3 +178,20 @@ func TestConvert(t *testing.T) {
 		}
 	})
 }
+
+func TestMapParamsConversion(t *testing.T) {
+    m := map[interface{}]interface{}{
+        "foo": "bar",
+    }
+
+    cm := convert(m)
+
+    var first string
+    for k := range cm.(*Map).items {
+        first = k
+        break
+    }
+    assert.Equal(t, "foo", first)
+    assert.Equal(t, []string{"foo"}, cm.(*Map).Keys())
+    assert.Equal(t, String("bar"), cm.Member("foo"))
+}

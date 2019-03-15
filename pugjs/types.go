@@ -78,6 +78,10 @@ func convert(in interface{}) Object {
 			o:     val.Interface(),
 		}
 		for _, k := range val.MapKeys() {
+			// dereference interfaces
+			if k.Kind() == reflect.Interface {
+				k = k.Elem()
+			}
 			newMap.items[k.String()] = convert(val.MapIndex(k))
 		}
 
