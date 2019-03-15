@@ -501,6 +501,12 @@ func runtimeEql(x, y interface{}) bool {
 		}
 	}
 
+	l, lok := x.(Object)
+	r, rok := y.(Object)
+	if lok && rok {
+		return l.String() == r.String()
+	}
+
 	return false
 }
 
