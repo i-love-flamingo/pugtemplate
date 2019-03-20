@@ -38,6 +38,7 @@ type state struct {
 	globals     []variable
 	boundBlocks []*boundBlock
 	ctx         reflect.Value
+	trace       bool
 }
 
 type boundBlock struct {
@@ -152,7 +153,7 @@ func (s *state) writeError(err error) {
 // execution stops, but partial results may already have been written to
 // the output writer.
 // A template may be executed safely in parallel.
-func (t *Template) ExecuteTemplate(ctx context.Context, wr io.Writer, name string, data interface{}) error {
+func (t *Template) ExecuteTemplate(ctx context.Context, wr io.Writer, name string, data interface{}, trace bool) error {
 	var tmpl *Template
 	if t.common != nil {
 		tmpl = t.tmpl[name]
@@ -160,7 +161,7 @@ func (t *Template) ExecuteTemplate(ctx context.Context, wr io.Writer, name strin
 	if tmpl == nil {
 		return fmt.Errorf("template: no template %q associated with template %q", name, t.name)
 	}
-	return tmpl.Execute(ctx, wr, data)
+	return tmpl.Execute(ctx, wr, data, trace)
 }
 
 // Execute applies a parsed template to the specified data object,
@@ -172,8 +173,8 @@ func (t *Template) ExecuteTemplate(ctx context.Context, wr io.Writer, name strin
 //
 // If data is a reflect.Value, the template applies to the concrete
 // value that the reflect.Value holds, as in fmt.Print.
-func (t *Template) Execute(ctx context.Context, wr io.Writer, data interface{}) error {
-	return t.execute(ctx, wr, data)
+func (t *Template) Execute(ctx context.Context, wr io.Writer, data interface{}, trace bool) error {
+	return t.execute(ctx, wr, data, trace)
 }
 
 func lowerFirst(s string) string {
@@ -192,7 +193,7 @@ func upperFirst(s string) string {
 	return string(unicode.ToUpper(r)) + s[n:]
 }
 
-func (t *Template) execute(ctx context.Context, wr io.Writer, data interface{}) (err error) {
+func (t *Template) execute(ctx context.Context, wr io.Writer, data interface{}, trace bool) (err error) {
 	value, ok := data.(reflect.Value)
 	if !ok {
 		value = reflect.ValueOf(data)
@@ -202,10 +203,11 @@ func (t *Template) execute(ctx context.Context, wr io.Writer, data interface{}) 
 	}
 
 	state := &state{
-		tmpl: t,
-		wr:   wr,
-		vars: []variable{{"$", value}},
-		ctx:  reflect.ValueOf(ctx),
+		tmpl:  t,
+		wr:    wr,
+		vars:  []variable{{"$", value}},
+		ctx:   reflect.ValueOf(ctx),
+		trace: trace,
 	}
 	if t.Tree == nil || t.Root == nil {
 		state.errorf("%q is an incomplete or empty template", t.Name())
@@ -472,10 +474,16 @@ func (s *state) walkTemplate(dot reflect.Value, t *parse.TemplateNode) {
 		copy(newState.vars, s.globals)
 	}
 
-	ctx, span := trace.StartSpan(s.ctx.Interface().(context.Context), "flamingo/pugtemplate/walkTemplate")
-	span.Annotate(nil, tmpl.name)
-	defer span.End()
-	newState.ctx = reflect.ValueOf(ctx)
+	if s.trace {
+		ctx, span := trace.StartSpan(s.ctx.Interface().(context.Context), "flamingo/pugtemplate/walkTemplate")
+		span.Annotate(nil, tmpl.name)
+		defer span.End()
+		newState.ctx = reflect.ValueOf(ctx)
+		newState.trace = true
+	} else {
+		newState.ctx = s.ctx
+	}
+
 	newState.depth++
 	newState.tmpl = tmpl
 	// No dynamic scoping: template invocations inherit no variables.

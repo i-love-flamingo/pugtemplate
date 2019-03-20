@@ -51,6 +51,7 @@ type (
 		*sync.RWMutex
 		Basedir         string `inject:"config:pug_template.basedir"`
 		Debug           bool   `inject:"config:debug.mode"`
+		Trace           bool   `inject:"config:pug_template.trace,optional"`
 		Assetrewrites   map[string]string
 		templatesLoaded int32
 		templates       map[string]*Template
@@ -277,7 +278,7 @@ func (e *Engine) Render(ctx context.Context, templateName string, data interface
 	ctx, execSpan := trace.StartSpan(ctx, "pug/execute")
 	execSpan.Annotate(nil, templateName)
 	start := time.Now()
-	err := templateInstance.ExecuteTemplate(ctx, result, templateName, convert(data))
+	err := templateInstance.ExecuteTemplate(ctx, result, templateName, convert(data), e.Trace)
 	execSpan.End()
 	ctx, _ = tag.New(ctx, tag.Upsert(templateKey, templateName))
 	stats.Record(ctx, rt.M(time.Since(start).Nanoseconds()/1000000))
