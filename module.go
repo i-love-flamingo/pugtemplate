@@ -203,10 +203,11 @@ func AnalyseCommand() func(cmd *cobra.Command, args []string) {
 // DefaultConfig for setting pug-related config options
 func (m *Module) DefaultConfig() config.Map {
 	return config.Map{
-		"pug_template.basedir":  "frontend/dist",
-		"pug_template.debug":    true,
-		"imageservice.base_url": "-",
-		"imageservice.secret":   "-",
+		"pug_template.basedir":                 "frontend/dist",
+		"pug_template.debug":                   true,
+		"imageservice.base_url":                "-",
+		"imageservice.secret":                  "-",
+		"opencensus.tracing.sampler.blacklist": config.Slice{"/static", "/assets"},
 	}
 }
 
