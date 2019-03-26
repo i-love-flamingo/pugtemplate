@@ -3,6 +3,7 @@ package pugtemplate
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -35,7 +36,27 @@ type (
 		controller *DebugController
 		Basedir    string `inject:"config:pug_template.basedir"`
 	}
+
+	assetFileSystem struct {
+		fs http.FileSystem
+	}
 )
+
+func (afs assetFileSystem) Open(path string) (http.File, error) {
+	path = strings.Replace(path, "/assets/", "", 1)
+
+	f, err := afs.fs.Open(path)
+	if err != nil {
+		return nil, err
+	}
+
+	s, err := f.Stat()
+	if s.IsDir() {
+		return nil, errors.New("not allowed")
+	}
+
+	return f, nil
+}
 
 func (r *routes) Inject(controller *DebugController) {
 	r.controller = controller
@@ -45,14 +66,13 @@ func (r *routes) Routes(registry *web.RouterRegistry) {
 	registry.Route("/_pugtpl/debug", "pugtpl.debug")
 	registry.HandleGet("pugtpl.debug", r.controller.Get)
 
-	//registry.HandleAny("_static", router.HTTPAction(http.StripPrefix("/static/", http.FileServer(http.Dir(r.Basedir)))))
 	registry.HandleAny("_static", web.WrapHTTPHandler(http.StripPrefix("/static/", http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		origin := req.Header.Get("Origin")
 		if origin != "" {
-			//TODO - configure whitelist
+			// TODO: configure whitelist
 			rw.Header().Add("Access-Control-Allow-Origin", origin)
 		}
-		http.ServeFile(rw, req, r.Basedir+"/"+req.URL.Path)
+		http.FileServer(assetFileSystem{http.Dir("frontend/dist/")}).ServeHTTP(rw, req)
 	}))))
 	registry.Route("/static/*n", "_static")
 
@@ -64,14 +84,14 @@ func (r *routes) Routes(registry *web.RouterRegistry) {
 	registry.HandleAny("_pugtemplate.assets", web.WrapHTTPHandler(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		origin := req.Header.Get("Origin")
 		if origin != "" {
-			//TODO - configure whitelist
+			// TODO: configure whitelist
 			rw.Header().Add("Access-Control-Allow-Origin", origin)
 		}
 		if r, e := http.Get("http://localhost:1337" + req.RequestURI); e == nil {
 			copyHeaders(r, rw)
 			io.Copy(rw, r.Body)
 		} else {
-			http.ServeFile(rw, req, strings.Replace(req.RequestURI, "/assets/", "frontend/dist/", 1))
+			http.FileServer(assetFileSystem{http.Dir("frontend/dist/")}).ServeHTTP(rw, req)
 		}
 	})))
 }
