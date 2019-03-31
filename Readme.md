@@ -119,3 +119,51 @@ each value, index in  ["a", "b", "c"]
 ## Debugging
 
 Templates can be debugged via `/_pugtpl/debug?tpl=pages/product/view`
+
+
+## Partials Rendering
+
+The template engine supports rendering of partials.
+The idea of partials is to support progressive enhancement by being able to request just a part (partial) of the content from the browser.
+The partial will still be rendered serverside and should be requested by an ajax call from the browser.
+
+Partials are requested by setting the http Header `X-Partial`
+
+The requested partials are searched in a subfolder "{templatename}.partials"
+
+So if you have a response that will normaly render like this:
+```
+return cc.responder.Render("folder/template")
+```
+
+And you request that page with the Header `X-Partial: foo,bar`
+
+The engine will search for partials in `folder/template.partials/foo.pug` and `folder/template.partials/bar.pug` and just render them and return them wrapped in a JSON response like this:
+```
+{
+    "partials": {
+        "foo": "content rendered",
+        "bar": "content rendered"
+    }
+}
+```
+
+If you call `setPartialData` in this templates, you can add additional data to the json response. For example:
+
+```
+setPartialData("cartamount", 4)
+```
+
+Will result in this response:
+
+```
+{
+    "partials": {
+        "foo": "content rendered",
+        "bar": "content rendered"
+    },
+    "data" : {
+        "key": 4
+    }
+}
+```
