@@ -6,14 +6,14 @@
  
 ## Flamingo Pug Template
 
-The Flamingo `core/pug_template` package is a flamingo template module to use pug.js templates.
+The Flamingo `flamingo.me/pugtemplate` package is a flamingo template module to use pug.js templates.
 
 Basically pug.js is by default compiled to JavaScript, and executed as HTML.
 
 This mechanism is used to render static prototypes for the templates, so the usual HTML prototype is
 just a natural artifact of this templating, instead of an extra workflow step or custom tool.
 
-This allows frontend developers to start templating very early with very few backend supports,
+This allows frontend developers to start templating very early with very few backend support,
 yet without the need to rewrite everything or even learn a new template language.
 
 Also the static prototype can be used to test/analyze the UI in early project phases, while the backend
@@ -25,7 +25,7 @@ The way pug.js works is essentially this:
 template -[tokenizer]-> tokens -[parser]-> AST -[compiler]-> JavaScript -[runtime]-> HTML
 ```
 
-To integrate this with Flamingo we save the AST (Abstract syntax tree) in a json representation.
+To integrate this with Flamingo we save the AST (abstract syntax tree) in a json representation.
 pug_template will use a parser to build an internal in-memory tree of the concrete building
 blocks, and then use a render to transform these blocks into actual go template with HTML.
 
@@ -33,10 +33,10 @@ blocks, and then use a render to transform these blocks into actual go template 
 AST -[parser]-> Block tree -[render]-> go template -[go-template-runtime]-> HTML
 ```
 
-(You can also view the intermediate result https://flamingoURL/_pugtpl/debug?tpl=home/home)
+(You can also view the intermediate result under https://flamingoURL/_pugtpl/debug?tpl=home/home)
 
-One of the features of pug.js is the posibility to use arbitrary JavaScript in case the template syntax
-does not provide the correct funtions. This is used for example in loops like
+One of the features of pug.js is the possibility to use arbitrary JavaScript in case the template syntax
+does not provide the correct functions. This is used for example in loops like
 
 ```jade
 ul
@@ -54,7 +54,7 @@ ul
     li= index + ': ' + val
 ```
 
-The pug_template module takes this JavaScript and uses the go-bases JS engine otto to parse the JavaScript
+The pug_template module takes this JavaScript and uses the go-based JS engine otto to parse the JavaScript
 and transpile it into actual go code.
 While this works for some standard statements and language constructs (default datatypes such as maps, list, etc),
 this does not support certain things such as OOP or the JS stdlib.
