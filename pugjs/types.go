@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"math/big"
 	"reflect"
+	"sort"
 	"strings"
 )
 
@@ -253,7 +254,11 @@ func (a *Array) Member(name string) Object {
 
 	case "slice":
 		return &Func{fnc: reflect.ValueOf(a.Slice)}
+	
+	case "sort":
+		return &Func{fnc: reflect.ValueOf(a.Sort)}
 	}
+
 
 	panic("field " + name + " not found")
 }
@@ -273,6 +278,15 @@ func (a *Array) Slice(n Number) Object {
 		items: a.items[int(n):],
 	}
 }
+
+// Sort array
+func (a *Array) Sort() Object {
+	sort.Slice(a.items, func(i, j int) bool {
+		return a.items[i].String() < a.items[j].String()
+	})
+	return Nil{}
+}
+
 
 // Length getter
 func (a *Array) Length() Object {
