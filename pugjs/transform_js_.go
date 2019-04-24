@@ -333,6 +333,9 @@ func (p *renderState) renderExpression(expr ast.Expression, wrap bool, dot bool)
 		}
 		result = `(__if (` + p.renderExpression(expr.Test, false, true) + `) (` + cons + `) (` + alternate + `) )`
 		if wrap {
+			if !p.rawmode {
+				result += ` | __pug__html`
+			}
 			result = `{{` + result + `}}`
 		}
 
@@ -344,6 +347,9 @@ func (p *renderState) renderExpression(expr ast.Expression, wrap bool, dot bool)
 			p.renderExpression(expr.Left, false, true),
 			p.renderExpression(expr.Right, false, true))
 		if wrap {
+			if !p.rawmode {
+				result += ` | __pug__html`
+			}
 			result = `{{` + result + `}}`
 		}
 
