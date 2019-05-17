@@ -39,6 +39,30 @@ func TestStriptagsFunc(t *testing.T) {
 			"<a href=\"http://domain.tld\" target=\"_blank\">Link with target</a>",
 			config.Slice{"a(href target)"},
 		},
+		{
+			"attribute naming",
+			`<div data-test:foo.bar="a">b</div>`,
+			`<div data-test:foo.bar="a">b</div>`,
+			config.Slice{"div(data-test:foo.bar)"},
+		},
+		{
+			"vue.js attr",
+			`<div v="menuLevel0ActiveIndex === 0 ? &#34;true&#34; : &#34;false&#34;">b</div>`,
+			`<div v="menuLevel0ActiveIndex === 0 ? &#34;true&#34; : &#34;false&#34;">b</div>`,
+			config.Slice{"div(v)"},
+		},
+		{
+			"vue.js complete",
+			`<div v-bind:aria-expanded="menuLevel0ActiveIndex === 0 ? &#34;true&#34; : &#34;false&#34;">b</div>`,
+			`<div v-bind:aria-expanded="menuLevel0ActiveIndex === 0 ? &#34;true&#34; : &#34;false&#34;">b</div>`,
+			config.Slice{"div(v-bind:aria-expanded)"},
+		},
+		{
+			"something i found in real life",
+			`<div class="miniCart" :class="{miniCartWishlistVisible: itemCount}"></div>`,
+			`<div class="miniCart" :class="{miniCartWishlistVisible: itemCount}"></div>`,
+			config.Slice{"div(class, :class)"},
+		},
 	}
 
 	var stripTagsFunc = new(templatefunctions.StriptagsFunc)

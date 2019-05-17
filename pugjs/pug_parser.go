@@ -149,7 +149,8 @@ func (p *renderState) build(parent *Token) (res []Node) {
 	return
 }
 
-var selfclosing = map[string]bool{
+// SelfClosingTags contains all self closing HTML tags
+var SelfClosingTags = map[string]bool{
 	"area":    true,
 	"base":    true,
 	"br":      true,
@@ -183,7 +184,7 @@ func (p *renderState) buildNode(t *Token) (res Node) {
 			tag.Attrs = append(tag.Attrs, Attribute{Name: a.Name, Val: JavaScriptExpression(fmt.Sprintf("%v", a.Val)), MustEscape: a.MustEscape})
 		}
 
-		tag.SelfClosing = selfclosing[tag.Name]
+		tag.SelfClosing = SelfClosingTags[tag.Name]
 
 		return tag
 
@@ -290,7 +291,7 @@ func (p *renderState) buildNode(t *Token) (res Node) {
 		}
 
 		// todo how?
-		// interpolatedTag.SelfClosing = selfclosing[interpolatedTag.Name]
+		// interpolatedTag.SelfClosing = SelfClosingTags[interpolatedTag.Name]
 
 		return interpolatedTag
 
