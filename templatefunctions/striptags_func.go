@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"flamingo.me/flamingo/v3/framework/config"
+	"flamingo.me/pugtemplate/pugjs"
 	"golang.org/x/net/html"
 )
 
@@ -21,20 +22,8 @@ type (
 )
 
 var (
-	nameRe          = regexp.MustCompile(`[a-z0-9\-]+`)
-	attributesRe    = regexp.MustCompile(`[a-z0-9]+([a-z]+)`)
-	selfClosingTags = map[string]struct{}{
-		"area":   {},
-		"base":   {},
-		"br":     {},
-		"col":    {},
-		"embed":  {},
-		"hr":     {},
-		"img":    {},
-		"input":  {},
-		"link":   {},
-		"source": {},
-	}
+	nameRe       = regexp.MustCompile(`[a-z0-9\-]+`)
+	attributesRe = regexp.MustCompile(`([a-z-:_.0-9]+)`)
 )
 
 func createTag(definition string) allowedTag {
@@ -115,7 +104,7 @@ func cleanTags(n *html.Node, allowedTags allowedTags) string {
 
 func isSelfClosingTag(n *html.Node) bool {
 	if n.Type == html.ElementNode {
-		if _, ok := selfClosingTags[n.Data]; ok {
+		if _, ok := pugjs.SelfClosingTags[n.Data]; ok {
 			return true
 		}
 	}
