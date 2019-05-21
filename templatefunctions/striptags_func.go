@@ -115,7 +115,11 @@ func getAllowedAttributes(attributes []html.Attribute, allowedAttributes allowed
 	res := ""
 	for _, attr := range attributes {
 		if _, ok := allowedAttributes[attr.Key]; ok {
-			res += " " + attr.Key + "=\"" + html.EscapeString(attr.Val) + "\""
+			if attr.Val != "" {
+				res += " " + attr.Key + "=\"" + html.EscapeString(attr.Val) + "\""
+			} else {
+				res += " " + attr.Key
+			}
 		}
 	}
 	return res

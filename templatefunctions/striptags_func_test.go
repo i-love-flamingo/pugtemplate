@@ -61,7 +61,13 @@ func TestStriptagsFunc(t *testing.T) {
 			"something i found in real life",
 			`<div class="miniCart" :class="{miniCartWishlistVisible: itemCount}"></div>`,
 			`<div class="miniCart" :class="{miniCartWishlistVisible: itemCount}"></div>`,
-			config.Slice{"div(class, :class)"},
+			config.Slice{"div(class :class)"},
+		},
+		{
+			"attributes without value",
+			`<input disabled name="remove-me"/>`,
+			`<input disabled />`,
+			config.Slice{"input(disabled)"},
 		},
 	}
 
