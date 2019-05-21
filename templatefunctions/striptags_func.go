@@ -2,7 +2,6 @@ package templatefunctions
 
 import (
 	"context"
-	"regexp"
 	"strings"
 
 	"flamingo.me/flamingo/v3/framework/config"
@@ -21,21 +20,25 @@ type (
 	}
 )
 
-var (
-	nameRe       = regexp.MustCompile(`[a-z0-9\-]+`)
-	attributesRe = regexp.MustCompile(`([a-z-:_.0-9]+)`)
-)
-
 func createTag(definition string) allowedTag {
 	definition = strings.ToLower(definition)
-	attributes := make(allowedAttributes)
-	for _, attr := range attributesRe.FindAllString(definition, -1) {
-		attributes[attr] = struct{}{}
+
+	if !strings.Contains(definition, "(") {
+		return allowedTag{name: definition}
+	}
+
+	split := strings.Split(definition, "(")
+	tagAttributes := make(allowedAttributes)
+	tagName := split[0]
+	allowedAttributes := strings.TrimRight(split[1], ")")
+
+	for _, attr := range strings.Split(allowedAttributes, " ") {
+		tagAttributes[attr] = struct{}{}
 	}
 
 	return allowedTag{
-		nameRe.FindString(definition),
-		attributes,
+		name:       tagName,
+		attributes: tagAttributes,
 	}
 }
 
