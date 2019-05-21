@@ -10,9 +10,9 @@ import (
 	"net/http"
 	"os"
 	"path"
+	"runtime/debug"
 	"strings"
 	"sync"
-	"sync/atomic"
 	"time"
 
 	"flamingo.me/flamingo/v3/framework/flamingo"
@@ -49,23 +49,17 @@ type (
 	// Engine is the one and only javascript template engine for go ;)
 	Engine struct {
 		*sync.RWMutex
-		Basedir         string `inject:"config:pug_template.basedir"`
-		Debug           bool   `inject:"config:debug.mode"`
-		Trace           bool   `inject:"config:pug_template.trace,optional"`
-		Assetrewrites   map[string]string
-		templatesLoaded int32
-		templates       map[string]*Template
-		TemplateCode    map[string]string
-		Webpackserver   bool
-		EventRouter     flamingo.EventRouter `inject:""`
-		FuncProvider    templateFuncProvider `inject:""`
-		Logger          flamingo.Logger      `inject:""`
-	}
-
-	// EventSubscriber is the event subscriber for Engine
-	EventSubscriber struct {
-		engine *Engine
-		logger flamingo.Logger
+		Basedir        string `inject:"config:pug_template.basedir"`
+		Debug          bool   `inject:"config:debug.mode"`
+		Trace          bool   `inject:"config:pug_template.trace,optional"`
+		Assetrewrites  map[string]string
+		templateLoaded sync.Map
+		templates      map[string]*Template
+		TemplateCode   map[string]string
+		Webpackserver  bool
+		EventRouter    flamingo.EventRouter `inject:""`
+		FuncProvider   templateFuncProvider `inject:""`
+		Logger         flamingo.Logger      `inject:""`
 	}
 )
 
@@ -97,28 +91,13 @@ func newRenderState(path string, debug bool, eventRouter flamingo.EventRouter, l
 	}
 }
 
-// Inject injects the EventSubscibers dependencies
-func (e *EventSubscriber) Inject(engine *Engine, logger flamingo.Logger) {
-	e.engine = engine
-	e.logger = logger
-}
-
-// Notify the event subscriper
-func (e *EventSubscriber) Notify(_ context.Context, event flamingo.Event) {
-	if _, ok := event.(*flamingo.StartupEvent); ok {
-		e.logger.Info("preloading templates on flamingo.AppStartupEvent")
-		go e.engine.LoadTemplates("")
-	}
-}
-
 // LoadTemplates with an optional filter
-func (e *Engine) LoadTemplates(filtername string) error {
+func (e *Engine) LoadTemplates(ctx context.Context, filtername string) error {
 	e.Lock()
 	defer e.Unlock()
 
-	if !atomic.CompareAndSwapInt32(&e.templatesLoaded, 0, 1) && filtername == "" {
-		return errors.New("Can not preload all templates again")
-	}
+	prevGC := debug.SetGCPercent(-1)
+	defer debug.SetGCPercent(prevGC)
 
 	start := time.Now()
 
@@ -127,9 +106,8 @@ func (e *Engine) LoadTemplates(filtername string) error {
 		json.Unmarshal(manifest, &e.Assetrewrites)
 	}
 
-	e.templates, err = e.compileDir(path.Join(e.Basedir, "template", "page"), "", filtername)
+	e.templates, err = e.compileDir(ctx, path.Join(e.Basedir, "template", "page"), "", filtername)
 	if err != nil {
-		atomic.StoreInt32(&e.templatesLoaded, 0) // bail out :(
 		return err
 	}
 
@@ -144,7 +122,7 @@ func (e *Engine) LoadTemplates(filtername string) error {
 }
 
 // compileDir returns a map of defined templates in directory dirname
-func (e *Engine) compileDir(root, dirname, filtername string) (map[string]*Template, error) {
+func (e *Engine) compileDir(ctx context.Context, root, dirname, filtername string) (map[string]*Template, error) {
 	result := make(map[string]*Template)
 
 	dir, err := os.Open(path.Join(root, dirname))
@@ -161,7 +139,7 @@ func (e *Engine) compileDir(root, dirname, filtername string) (map[string]*Templ
 
 	for _, filename := range filenames {
 		if filename.IsDir() {
-			tpls, err := e.compileDir(root, path.Join(dirname, filename.Name()), filtername)
+			tpls, err := e.compileDir(ctx, root, path.Join(dirname, filename.Name()), filtername)
 			if err != nil {
 				return nil, err
 			}
@@ -179,6 +157,10 @@ func (e *Engine) compileDir(root, dirname, filtername string) (map[string]*Templ
 					continue
 				}
 
+				ctx, span := trace.StartSpan(ctx, "pug/template/compile")
+				span.Annotate(nil, filename.Name())
+				defer span.End()
+
 				renderState := newRenderState(path.Join(e.Basedir, "template", "page"), e.Debug, e.EventRouter, e.Logger)
 				renderState.funcs = FuncMap{}
 
@@ -186,10 +168,16 @@ func (e *Engine) compileDir(root, dirname, filtername string) (map[string]*Templ
 					renderState.funcs[k] = f.Func
 				}
 
+				_, span2 := trace.StartSpan(ctx, "pug/template/parse")
 				token, err := renderState.Parse(name)
 				if err != nil {
+					span2.End()
 					return nil, err
 				}
+				span2.End()
+
+				_, span3 := trace.StartSpan(ctx, "pug/template/tokenToTemplate")
+				defer span3.End()
 				result[name], e.TemplateCode[name], err = renderState.TokenToTemplate(name, token)
 				if err != nil {
 					return nil, err
@@ -247,17 +235,11 @@ func (e *Engine) Render(ctx context.Context, templateName string, data interface
 	ctx = context.WithValue(ctx, "page.template", "page"+page)
 
 	// recompile, make sure to fully load only once!
-	if atomic.LoadInt32(&e.templatesLoaded) == 0 && !e.Debug {
-		_, spanLoad := trace.StartSpan(ctx, "pug/loadAllTemplates")
-		if err := e.LoadTemplates(""); err != nil {
-			spanLoad.End()
-			return nil, err
-		}
-		spanLoad.End()
-	} else if e.Debug {
+	_, loaded := e.templateLoaded.LoadOrStore(templateName, struct{}{})
+	if !loaded || e.Debug {
 		_, spanLoad := trace.StartSpan(ctx, "pug/loadTemplate")
 		spanLoad.Annotate(nil, templateName)
-		if err := e.LoadTemplates(templateName); err != nil {
+		if err := e.LoadTemplates(ctx, templateName); err != nil {
 			spanLoad.End()
 			return nil, err
 		}

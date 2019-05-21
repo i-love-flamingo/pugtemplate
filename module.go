@@ -139,18 +139,8 @@ func (m *Module) Configure(injector *dingo.Injector) {
 	injector.BindMap((*flamingo.TemplateFunc)(nil), "tryUrl").To(templatefunctions.TryURLFunc{})
 	injector.BindMap((*flamingo.TemplateFunc)(nil), "url").To(templatefunctions.URLFunc{})
 
-	m.loadmock("../src/layout/*")
-	m.loadmock("../src/layout/*/*")
-	m.loadmock("../src/layout/*/*/*")
-	m.loadmock("../src/atom/*")
-	m.loadmock("../src/molecule/*/*")
-	m.loadmock("../src/organism/*")
-	m.loadmock("../src/page/*/*")
-	m.loadmock("../src/mock")
-
 	injector.BindMulti(new(cobra.Command)).ToProvider(templatecheckCmd)
 	web.BindRoutes(injector, new(routes))
-	flamingo.BindEventSubscriber(injector).To(pugjs.EventSubscriber{})
 }
 
 func templatecheckCmd() *cobra.Command {

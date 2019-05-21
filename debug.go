@@ -37,7 +37,7 @@ const debugTemplate = `<!doctype html>
 // Get Response for Debug Info
 func (dc *DebugController) Get(ctx context.Context, r *web.Request) web.Result {
 	tplName, _ := r.Query1("tpl")
-	dc.Engine.LoadTemplates(tplName)
+	dc.Engine.LoadTemplates(ctx, tplName)
 
 	tpl, ok := dc.Engine.TemplateCode[tplName]
 	if !ok {

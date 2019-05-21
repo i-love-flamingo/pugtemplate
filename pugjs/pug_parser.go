@@ -136,17 +136,19 @@ func (p *renderState) TokenToTemplate(name string, t *Token) (*Template, string,
 	return template, wr.String(), nil
 }
 
-func (p *renderState) build(parent *Token) (res []Node) {
+func (p *renderState) build(parent *Token) []Node {
 	if parent == nil {
-		return
+		return nil
 	}
+
+	var res = make([]Node, 0, len(parent.Nodes))
 	for _, t := range parent.Nodes {
 		node := p.buildNode(t)
 		if node != nil {
 			res = append(res, node)
 		}
 	}
-	return
+	return res
 }
 
 var selfclosing = map[string]bool{
@@ -175,12 +177,18 @@ func (p *renderState) buildNode(t *Token) (res Node) {
 		tag.Name = t.Name
 		tag.IsInline = t.IsInline
 		tag.SelfClosing = t.SelfClosing
-		for _, a := range t.AttributeBlocks {
-			tag.AttributeBlocks = append(tag.AttributeBlocks, JavaScriptExpression(a.Val))
+		if len(t.AttributeBlocks) > 0 {
+			tag.AttributeBlocks = make([]JavaScriptExpression, 0, len(t.AttributeBlocks))
+			for _, a := range t.AttributeBlocks {
+				tag.AttributeBlocks = append(tag.AttributeBlocks, JavaScriptExpression(a.Val))
+			}
 		}
 		tag.Block = Block{Nodes: p.build(t.Block)}
-		for _, a := range t.Attrs {
-			tag.Attrs = append(tag.Attrs, Attribute{Name: a.Name, Val: JavaScriptExpression(fmt.Sprintf("%v", a.Val)), MustEscape: a.MustEscape})
+		if len(t.Attrs) > 0 {
+			tag.Attrs = make([]Attribute, 0, len(t.Attrs))
+			for _, a := range t.Attrs {
+				tag.Attrs = append(tag.Attrs, Attribute{Name: a.Name, Val: JavaScriptExpression(fmt.Sprintf("%v", a.Val)), MustEscape: a.MustEscape})
+			}
 		}
 
 		tag.SelfClosing = selfclosing[tag.Name]
@@ -195,8 +203,11 @@ func (p *renderState) buildNode(t *Token) (res Node) {
 		}
 		mixin.Name = JavaScriptIdentifier(t.Name)
 		mixin.Args = JavaScriptExpression(`[` + t.Args + `]`)
-		for _, a := range t.Attrs {
-			mixin.Attrs = append(mixin.Attrs, Attribute{Name: a.Name, Val: JavaScriptExpression(fmt.Sprintf("%v", a.Val)), MustEscape: a.MustEscape})
+		if len(t.Attrs) > 0 {
+			mixin.Attrs = make([]Attribute, 0, len(t.Attrs))
+			for _, a := range t.Attrs {
+				mixin.Attrs = append(mixin.Attrs, Attribute{Name: a.Name, Val: JavaScriptExpression(fmt.Sprintf("%v", a.Val)), MustEscape: a.MustEscape})
+			}
 		}
 		mixin.Call = t.Call
 

@@ -2,7 +2,6 @@ package pugjs
 
 import (
 	"bytes"
-	"context"
 	"fmt"
 	"strings"
 )
@@ -31,9 +30,6 @@ func (ct *CommonTag) render(name string, p *renderState, wr *bytes.Buffer) error
 		return err
 	}
 
-	additional := new(bytes.Buffer)
-	p.eventRouter.Dispatch(context.Background(), &OnRenderHTMLBlockEvent{name, additional})
-
 	var attrs string
 	if len(ct.AttributeBlocks) > 0 || len(ct.Attrs) > 0 {
 		attrs = `{{ __attrs `
@@ -55,13 +51,13 @@ func (ct *CommonTag) render(name string, p *renderState, wr *bytes.Buffer) error
 		fmt.Fprintf(wr, `<%s%s>`, name, attrs)
 
 	case name == "script" && strings.Index(subblock.String(), "\n") > -1:
-		fmt.Fprintf(wr, "<%s%s>\n%s\n</%s>", name, attrs, additional.String()+subblock.String(), name)
+		fmt.Fprintf(wr, "<%s%s>\n%s\n</%s>", name, attrs, subblock.String(), name)
 
 	case !ct.Block.Inline() && p.debug:
-		fmt.Fprintf(wr, "<%s%s>     {{- \"\" -}}\n%s     {{- \"\" -}}\n</%s>", name, attrs, additional.String()+subblock.String(), name)
+		fmt.Fprintf(wr, "<%s%s>     {{- \"\" -}}\n%s     {{- \"\" -}}\n</%s>", name, attrs, subblock.String(), name)
 
 	default:
-		fmt.Fprintf(wr, `<%s%s>%s</%s>`, name, attrs, additional.String()+subblock.String(), name)
+		fmt.Fprintf(wr, `<%s%s>%s</%s>`, name, attrs, subblock.String(), name)
 	}
 
 	if !ct.Inline() && p.debug {
