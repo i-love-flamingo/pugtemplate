@@ -30,11 +30,13 @@ type (
 		RouterRegistry *web.RouterRegistry `inject:""`
 		DefaultMux     *http.ServeMux      `inject:",optional"`
 		Basedir        string              `inject:"config:pug_template.basedir"`
+		Whitelist      config.Slice        `inject:"config:pug_template.cors_whitelist"`
 	}
 
 	routes struct {
 		controller *DebugController
-		Basedir    string `inject:"config:pug_template.basedir"`
+		Basedir    string       `inject:"config:pug_template.basedir"`
+		Whitelist  config.Slice `inject:"config:pug_template.cors_whitelist"`
 	}
 
 	assetFileSystem struct {
@@ -62,18 +64,32 @@ func (r *routes) Inject(controller *DebugController) {
 	r.controller = controller
 }
 
+func assetHandler(whitelisted []string) http.Handler {
+	whitelist := "!" + strings.Join(whitelisted, "!") + "!"
+
+	return http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+		origin := req.Header.Get("Origin")
+		if strings.Contains(whitelist, "!"+origin+"!") || strings.Contains(whitelist, "!*!") {
+			rw.Header().Add("Access-Control-Allow-Origin", origin)
+		}
+
+		if r, e := http.Get("http://localhost:1337" + req.RequestURI); e == nil {
+			copyHeaders(r, rw)
+			io.Copy(rw, r.Body)
+		} else {
+			http.FileServer(assetFileSystem{http.Dir("frontend/dist/")}).ServeHTTP(rw, req)
+		}
+	})
+}
+
 func (r *routes) Routes(registry *web.RouterRegistry) {
+	var whitelist []string
+	r.Whitelist.MapInto(&whitelist)
+
 	registry.Route("/_pugtpl/debug", "pugtpl.debug")
 	registry.HandleGet("pugtpl.debug", r.controller.Get)
 
-	registry.HandleAny("_static", web.WrapHTTPHandler(http.StripPrefix("/static/", http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
-		origin := req.Header.Get("Origin")
-		if origin != "" {
-			// TODO: configure whitelist
-			rw.Header().Add("Access-Control-Allow-Origin", origin)
-		}
-		http.FileServer(assetFileSystem{http.Dir("frontend/dist/")}).ServeHTTP(rw, req)
-	}))))
+	registry.HandleAny("_static", web.WrapHTTPHandler(http.StripPrefix("/static/", assetHandler(whitelist))))
 	registry.Route("/static/*n", "_static")
 
 	registry.HandleData("page.template", func(ctx context.Context, _ *web.Request, _ web.RequestParams) interface{} {
@@ -81,19 +97,7 @@ func (r *routes) Routes(registry *web.RouterRegistry) {
 	})
 
 	registry.Route("/assets/*f", "_pugtemplate.assets")
-	registry.HandleAny("_pugtemplate.assets", web.WrapHTTPHandler(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
-		origin := req.Header.Get("Origin")
-		if origin != "" {
-			// TODO: configure whitelist
-			rw.Header().Add("Access-Control-Allow-Origin", origin)
-		}
-		if r, e := http.Get("http://localhost:1337" + req.RequestURI); e == nil {
-			copyHeaders(r, rw)
-			io.Copy(rw, r.Body)
-		} else {
-			http.FileServer(assetFileSystem{http.Dir("frontend/dist/")}).ServeHTTP(rw, req)
-		}
-	})))
+	registry.HandleAny("_pugtemplate.assets", web.WrapHTTPHandler(assetHandler(whitelist)))
 }
 
 // Configure DI
@@ -108,19 +112,10 @@ func (m *Module) Configure(injector *dingo.Injector) {
 	)
 
 	if m.DefaultMux != nil {
-		m.DefaultMux.HandleFunc("/assets/", func(rw http.ResponseWriter, req *http.Request) {
-			origin := req.Header.Get("Origin")
-			if origin != "" {
-				//TODO - configure whitelist
-				rw.Header().Add("Access-Control-Allow-Origin", origin)
-			}
-			if r, e := http.Get("http://localhost:1337" + req.RequestURI); e == nil {
-				copyHeaders(r, rw)
-				io.Copy(rw, r.Body)
-			} else {
-				http.ServeFile(rw, req, strings.Replace(req.RequestURI, "/assets/", "frontend/dist/", 1))
-			}
-		})
+		var whitelist []string
+		m.Whitelist.MapInto(&whitelist)
+
+		m.DefaultMux.Handle("/assets/", assetHandler(whitelist))
 	}
 
 	injector.BindMap((*flamingo.TemplateFunc)(nil), "Math").To(templatefunctions.JsMath{})
@@ -225,6 +220,7 @@ func (m *Module) DefaultConfig() config.Map {
 	return config.Map{
 		"pug_template.basedir":                 "frontend/dist",
 		"pug_template.debug":                   true,
+		"pug_template.cors_whitelist":          config.Slice{"http://localhost:3210"},
 		"imageservice.base_url":                "-",
 		"imageservice.secret":                  "-",
 		"opencensus.tracing.sampler.blacklist": config.Slice{"/static", "/assets"},
