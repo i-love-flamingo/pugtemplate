@@ -176,7 +176,8 @@ func convert(in interface{}) Object {
 		return Nil{}
 	}
 
-	panic(fmt.Sprintf("Cannot convert %#v %T %s %s", val, val, val.Type(), val.Kind()))
+	panicOrError(fmt.Sprintf("Cannot convert %#v %T %s %s", val, val, val.Type(), val.Kind()))
+	return Nil{}
 }
 
 // Func type
@@ -267,7 +268,8 @@ func (a *Array) Member(name string) Object {
 		return &Func{fnc: reflect.ValueOf(a.Sort)}
 	}
 
-	panic("field " + name + " not found")
+	panicOrError("field '" + name + "' not found on pugjs Array")
+	return Nil{}
 }
 
 // Splice an array
@@ -476,7 +478,8 @@ func (m *Map) String() string {
 	}
 	b, err := m.MarshalJSON()
 	if err != nil {
-		panic(err)
+		panicOrError(err)
+		return ""
 	}
 	return string(b)
 }

@@ -79,6 +79,10 @@ const (
 var (
 	rt             = stats.Int64("flamingo/pugtemplate/render", "pugtemplate render times", stats.UnitMilliseconds)
 	templateKey, _ = tag.NewKey("template")
+
+	debugMode = false
+	loggerInstance flamingo.Logger
+
 )
 
 func init() {
@@ -231,6 +235,7 @@ func (e *Engine) RenderPartials(ctx context.Context, templateName string, data i
 
 // Render via html/pug_template
 func (e *Engine) Render(ctx context.Context, templateName string, data interface{}) (io.Reader, error) {
+	setLoggerInfos(e.Logger,e.Debug)
 	ctx, span := trace.StartSpan(ctx, "pug/render")
 	defer span.End()
 
@@ -299,4 +304,24 @@ func (e *Engine) Render(ctx context.Context, templateName string, data interface
 	}
 
 	return result, nil
+}
+
+//setLoggerInfos - used to set the package variables used in the panicOrError method
+func setLoggerInfos(logger flamingo.Logger, d bool) {
+	if logger == nil {
+		return
+	}
+	debugMode = d
+	loggerInstance = logger
+}
+
+func panicOrError(v interface{}) {
+	if loggerInstance == nil {
+		panic(v)
+	}
+	if debugMode {
+		panic(v)
+	} else {
+		loggerInstance.Error(v)
+	}
 }
