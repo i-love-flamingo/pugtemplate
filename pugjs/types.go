@@ -216,6 +216,7 @@ type Array struct {
 	o     interface{}
 }
 
+// Items getter
 func (a *Array) Items() []Object {
 	return a.items
 }
@@ -326,8 +327,15 @@ func (a *Array) Pop() Object {
 	return last
 }
 
-func (a *Array) True() bool                   { return len(a.items) > 0 }      // True getter
-func (a *Array) MarshalJSON() ([]byte, error) { return json.Marshal(a.items) } // MarshalJSON implementation
+// True getter
+func (a *Array) True() bool {
+	return len(a.items) > 0
+}
+
+// MarshalJSON implementation
+func (a *Array) MarshalJSON() ([]byte, error) {
+	return json.Marshal(a.items)
+}
 
 func (a *Array) copy() Object {
 	c := &Array{
@@ -533,7 +541,7 @@ func (m *Map) MarshalJSON() ([]byte, error) {
 
 // True getter
 func (m *Map) True() bool {
-	if m.o != nil && reflect.DeepEqual(reflect.Zero(reflect.TypeOf(m.o)).Interface(), m.o) {
+	if m.o == nil && reflect.DeepEqual(reflect.Zero(reflect.TypeOf(m.o)).Interface(), m.o) {
 		return false
 	}
 	m.convert()
@@ -630,7 +638,7 @@ func (s String) Replace(what, with String) String {
 	return String(strings.Replace(string(s), string(what), string(with), -1))
 }
 
-// Return string length
+// Length of string
 func (s String) Length() int { return len(s) }
 
 func (s String) copy() Object { return s }
@@ -638,26 +646,41 @@ func (s String) copy() Object { return s }
 // Number type
 type Number float64
 
-func (n Number) Member(string) Object { return Nil{} }                             // Member getter
-func (n Number) String() string       { return big.NewFloat(float64(n)).String() } // String formatter
-func (n Number) copy() Object         { return n }
-func (n Number) iface() interface{}   { return n }
+// Member getter
+func (n Number) Member(string) Object { return Nil{} }
+
+// String formatter
+func (n Number) String() string     { return big.NewFloat(float64(n)).String() }
+func (n Number) copy() Object       { return n }
+func (n Number) iface() interface{} { return n }
 
 // Bool type
 type Bool bool
 
-func (b Bool) Member(string) Object { return Nil{} }                      // Member getter
-func (b Bool) String() string       { return fmt.Sprintf("%v", bool(b)) } // String formatter
-func (b Bool) True() bool           { return bool(b) }                    // True getter
-func (b Bool) copy() Object         { return b }
-func (b Bool) iface() interface{}   { return b }
+// Member getter
+func (b Bool) Member(string) Object { return Nil{} }
+
+// String formatter
+func (b Bool) String() string { return fmt.Sprintf("%v", bool(b)) }
+
+// True getter
+func (b Bool) True() bool         { return bool(b) }
+func (b Bool) copy() Object       { return b }
+func (b Bool) iface() interface{} { return b }
 
 // Nil type
 type Nil struct{}
 
-func (n Nil) Member(string) Object         { return Nil{} }               // Member is always nil
-func (n Nil) String() string               { return "" }                  // String is always empty
-func (n Nil) MarshalJSON() ([]byte, error) { return []byte("null"), nil } // MarshalJSON
-func (n Nil) True() bool                   { return false }               // True is always false
-func (n Nil) copy() Object                 { return Nil{} }
-func (n Nil) iface() interface{}           { return nil }
+// Member is always nil
+func (n Nil) Member(string) Object { return Nil{} }
+
+// String is always empty
+func (n Nil) String() string { return "" }
+
+// MarshalJSON of Nil
+func (n Nil) MarshalJSON() ([]byte, error) { return []byte("null"), nil }
+
+// True is always false
+func (n Nil) True() bool         { return false }
+func (n Nil) copy() Object       { return Nil{} }
+func (n Nil) iface() interface{} { return nil }
