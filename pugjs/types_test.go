@@ -99,3 +99,8 @@ func TestString_Length(t *testing.T) {
 	assert.Equal(t, String("").Length(), 0)
 	assert.Equal(t, String("test123").Length(), 7)
 }
+
+func TestMap(t *testing.T) {
+	m := new(Map)
+	assert.False(t, m.True())
+}

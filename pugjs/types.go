@@ -254,11 +254,10 @@ func (a *Array) Member(name string) Object {
 
 	case "slice":
 		return &Func{fnc: reflect.ValueOf(a.Slice)}
-	
+
 	case "sort":
 		return &Func{fnc: reflect.ValueOf(a.Sort)}
 	}
-
 
 	panic("field " + name + " not found")
 }
@@ -286,7 +285,6 @@ func (a *Array) Sort() Object {
 	})
 	return Nil{}
 }
-
 
 // Length getter
 func (a *Array) Length() Object {
@@ -352,6 +350,12 @@ type Map struct {
 
 func (m *Map) convert() {
 	if m.items != nil {
+		return
+	}
+
+	if m.o == nil {
+		m.items = make(map[string]Object)
+		m.order = make([]string, 0)
 		return
 	}
 
