@@ -86,6 +86,9 @@ func (r *routes) Routes(registry *web.RouterRegistry) {
 	var whitelist []string
 	r.Whitelist.MapInto(&whitelist)
 
+	// trim whitelist of trailing slashes as urls can be configured that way
+	whitelist = trimTrailingSlashes(whitelist)
+
 	registry.Route("/_pugtpl/debug", "pugtpl.debug")
 	registry.HandleGet("pugtpl.debug", r.controller.Get)
 
@@ -262,4 +265,14 @@ func copyHeaders(r *http.Response, w http.ResponseWriter) {
 			w.Header().Add(key, value)
 		}
 	}
+}
+
+// trimTrailingSlashes remove trailing slashes from configured whitelist urls
+// in case they have been configured
+func trimTrailingSlashes(whitelist []string) []string {
+	result := make([]string, len(whitelist))
+	for i, entry := range whitelist {
+		result[i] = strings.TrimRight(entry, "/")
+	}
+	return result
 }
