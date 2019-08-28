@@ -80,9 +80,8 @@ var (
 	rt             = stats.Int64("flamingo/pugtemplate/render", "pugtemplate render times", stats.UnitMilliseconds)
 	templateKey, _ = tag.NewKey("template")
 
-	debugMode = false
+	debugMode      = false
 	loggerInstance flamingo.Logger
-
 )
 
 func init() {
@@ -90,7 +89,14 @@ func init() {
 }
 
 // NewEngine constructor
-func NewEngine() *Engine {
+func NewEngine(debugsetup *struct {
+	Debug  bool            `inject:"config:debug.mode"`
+	Logger flamingo.Logger `inject:""`
+}) *Engine {
+	if debugsetup != nil {
+		setLoggerInfos(debugsetup.Logger, debugsetup.Debug)
+	}
+
 	return &Engine{
 		RWMutex:      new(sync.RWMutex),
 		TemplateCode: make(map[string]string),
@@ -235,7 +241,6 @@ func (e *Engine) RenderPartials(ctx context.Context, templateName string, data i
 
 // Render via html/pug_template
 func (e *Engine) Render(ctx context.Context, templateName string, data interface{}) (io.Reader, error) {
-	setLoggerInfos(e.Logger,e.Debug)
 	ctx, span := trace.StartSpan(ctx, "pug/render")
 	defer span.End()
 
