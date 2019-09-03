@@ -2,15 +2,12 @@ package pugtemplate
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
-	"path/filepath"
 	"strings"
 
 	"flamingo.me/dingo"
@@ -26,11 +23,9 @@ import (
 type (
 	// Module for framework/pug_template
 	Module struct {
-		RootCmd        *cobra.Command      `inject:"flamingo"`
-		RouterRegistry *web.RouterRegistry `inject:""`
-		DefaultMux     *http.ServeMux      `inject:",optional"`
-		Basedir        string              `inject:"config:pug_template.basedir"`
-		Whitelist      config.Slice        `inject:"config:pug_template.cors_whitelist"`
+		DefaultMux *http.ServeMux `inject:",optional"`
+		Basedir    string         `inject:"config:pug_template.basedir"`
+		Whitelist  config.Slice   `inject:"config:pug_template.cors_whitelist"`
 	}
 
 	routes struct {
@@ -137,15 +132,6 @@ func (m *Module) Configure(injector *dingo.Injector) {
 	injector.BindMap((*flamingo.TemplateFunc)(nil), "tryUrl").To(templatefunctions.TryURLFunc{})
 	injector.BindMap((*flamingo.TemplateFunc)(nil), "url").To(templatefunctions.URLFunc{})
 
-	m.loadmock("../src/layout/*")
-	m.loadmock("../src/layout/*/*")
-	m.loadmock("../src/layout/*/*/*")
-	m.loadmock("../src/atom/*")
-	m.loadmock("../src/molecule/*/*")
-	m.loadmock("../src/organism/*")
-	m.loadmock("../src/page/*/*")
-	m.loadmock("../src/mock")
-
 	injector.BindMulti(new(cobra.Command)).ToProvider(templatecheckCmd)
 	web.BindRoutes(injector, new(routes))
 	flamingo.BindEventSubscriber(injector).To(pugjs.EventSubscriber{})
@@ -227,35 +213,6 @@ func (m *Module) DefaultConfig() config.Map {
 		"imageservice.base_url":                "-",
 		"imageservice.secret":                  "-",
 		"opencensus.tracing.sampler.blacklist": config.Slice{"/static", "/assets"},
-	}
-}
-
-func (m *Module) loadmock(where string) (interface{}, error) {
-	matches, err := filepath.Glob(m.Basedir + "/" + where + "/*.mock.json")
-	if err != nil {
-		return nil, err
-	}
-
-	for _, match := range matches {
-		b, e := ioutil.ReadFile(match)
-		if e != nil {
-			continue
-		}
-		var res interface{}
-		json.Unmarshal(b, &res)
-		name := strings.Replace(filepath.Base(match), ".mock.json", "", 1)
-		if !m.RouterRegistry.HasData(name) {
-			m.RouterRegistry.HandleData(name, mockcontroller(name, res))
-			log.Println("mocking because not set:", name)
-		}
-	}
-
-	return nil, nil
-}
-
-func mockcontroller(name string, data interface{}) web.DataAction {
-	return func(context.Context, *web.Request, web.RequestParams) interface{} {
-		return data
 	}
 }
 
