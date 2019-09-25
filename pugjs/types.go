@@ -260,7 +260,7 @@ func (a *Array) Member(name string) Object {
 		return &Func{fnc: reflect.ValueOf(a.Sort)}
 	}
 
-	panic("field " + name + " not found")
+	return Nil{}
 }
 
 // Splice an array

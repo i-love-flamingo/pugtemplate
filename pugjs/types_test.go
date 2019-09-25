@@ -83,6 +83,57 @@ func TestArray_Slice(t *testing.T) {
 	assert.Contains(t, leftover.items, Number(5))
 }
 
+func TestArray_Member(t *testing.T) {
+	arr := func() *Array { return convert([]int{1, 2, 3, 4, 5}).(*Array) }
+
+	t.Run("length", func(t *testing.T) {
+		assert.Equal(t, Number(5), arr().Member("length").iface().(func() Object)())
+	})
+
+	t.Run("indexOf", func(t *testing.T) {
+		assert.Equal(t, Number(1), arr().Member("indexOf").iface().(func(a interface{}) Object)(2))
+	})
+
+	t.Run("join", func(t *testing.T) {
+		assert.Equal(t, String("1*2*3*4*5"), arr().Member("join").iface().(func(a string) Object)("*"))
+	})
+
+	t.Run("push", func(t *testing.T) {
+		arr := arr()
+		assert.Equal(t, Nil{}, arr.Member("push").iface().(func(a Object) Object)(Number(6)))
+		assert.Equal(t, Number(6), arr.Member("length").iface().(func() Object)())
+		assert.Equal(t, Number(5), arr.Member("indexOf").iface().(func(a interface{}) Object)(6))
+	})
+
+	t.Run("pop", func(t *testing.T) {
+		assert.Equal(t, Number(5), arr().Member("pop").iface().(func() Object)())
+	})
+
+	t.Run("splice", func(t *testing.T) {
+		arr := arr()
+		splice := arr.Member("splice").iface().(func(n Number) Object)(2)
+		assert.Equal(t, "3 4 5", splice.String())
+		assert.Equal(t, "1 2", arr.String())
+	})
+
+	t.Run("slice", func(t *testing.T) {
+		arr := arr()
+		slice := arr.Member("slice").iface().(func(n Number) Object)(2)
+		assert.Equal(t, "3 4 5", slice.String())
+		assert.Equal(t, "1 2 3 4 5", arr.String())
+	})
+
+	t.Run("sort", func(t *testing.T) {
+		arr := convert([]int{5, 2, 1, 4, 3}).(*Array)
+		arr.Member("sort").iface().(func() Object)()
+		assert.Equal(t, "1 2 3 4 5", arr.String())
+	})
+
+	t.Run("undefined member", func(t *testing.T) {
+		assert.Equal(t, Nil{}, arr().Member("foo"))
+	})
+}
+
 func TestString_Slice(t *testing.T) {
 	s := String("test123")
 
