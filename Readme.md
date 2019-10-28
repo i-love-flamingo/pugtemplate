@@ -1,5 +1,7 @@
 # Pug Template
 
+[![Go Report Card](https://goreportcard.com/badge/github.com/i-love-flamingo/pugtemplate)](https://goreportcard.com/report/github.com/i-love-flamingo/pugtemplate) [![GoDoc](https://godoc.org/github.com/i-love-flamingo/pugtemplate?status.svg)](https://godoc.org/github.com/i-love-flamingo/pugtemplate) [![Build Status](https://travis-ci.org/i-love-flamingo/pugtemplate.svg)](https://travis-ci.org/i-love-flamingo/pugtemplate)
+
 ## pug.js
 
 [Pug](https://pugjs.org/api/getting-started.html) is a JavaScript template rendering engine.
