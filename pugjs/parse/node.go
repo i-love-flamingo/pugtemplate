@@ -50,8 +50,8 @@ func (t NodeType) Type() NodeType {
 	return t
 }
 
+// NodeElements definition
 const (
-	// NodeText as plain text
 	NodeText       NodeType = iota // NodeText Plain text.
 	NodeAction                     // NodeAction - A non-control action such as a field evaluation.
 	NodeBool                       // NodeBool - A boolean constant.
