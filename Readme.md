@@ -133,7 +133,7 @@ Partials are requested by setting the http Header `X-Partial`
 
 The requested partials are searched in a subfolder "{templatename}.partials"
 
-So if you have a response that will normaly render like this:
+So if you have a response that will normally render like this:
 ```
 return cc.responder.Render("folder/template")
 ```
