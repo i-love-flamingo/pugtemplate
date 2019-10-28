@@ -39,6 +39,7 @@ type (
 	}
 )
 
+// Open - open func
 func (afs assetFileSystem) Open(path string) (http.File, error) {
 	path = strings.Replace(path, "/assets/", "", 1)
 
@@ -55,6 +56,7 @@ func (afs assetFileSystem) Open(path string) (http.File, error) {
 	return f, nil
 }
 
+// Inject - inject func
 func (r *routes) Inject(controller *DebugController) {
 	r.controller = controller
 }
@@ -77,6 +79,7 @@ func assetHandler(whitelisted []string) http.Handler {
 	})
 }
 
+// Routes define routes
 func (r *routes) Routes(registry *web.RouterRegistry) {
 	var whitelist []string
 	r.Whitelist.MapInto(&whitelist)
@@ -146,7 +149,7 @@ func templatecheckCmd() *cobra.Command {
 	}
 }
 
-// Analyse command
+// AnalyseCommand func
 func AnalyseCommand() func(cmd *cobra.Command, args []string) {
 	return func(cmd *cobra.Command, args []string) {
 		hasError := false
