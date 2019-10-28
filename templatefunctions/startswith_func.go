@@ -6,9 +6,11 @@ import (
 )
 
 type (
+	// StartsWithFunc struct
 	StartsWithFunc struct{}
 )
 
+// Func StartsWithFunc
 func (s *StartsWithFunc) Func(ctx context.Context) interface{} {
 	return func(haystack string, needle string) bool {
 		haystack = strings.ToLower(haystack)

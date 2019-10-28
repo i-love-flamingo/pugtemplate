@@ -196,6 +196,7 @@ func (f *Func) True() bool { return true }
 func (f *Func) copy() Object       { return &(*f) }
 func (f *Func) iface() interface{} { return f.fnc.Interface() }
 
+// AllowDeep bool flag
 var AllowDeep = true
 
 // MarshalJSON implementation
