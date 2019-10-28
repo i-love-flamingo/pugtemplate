@@ -3,6 +3,7 @@ language: go
 go:
   - 1.x
   - 1.11.x
+  - 1.12.x
   - 1.13.x
 
 env:
@@ -13,5 +14,7 @@ install: true
 script:
   - go get -u golang.org/x/lint/golint
   - golint -set_exit_status $(go list ./...)
-  - go test -v -vet=all ./...
-  - go test -v -race ./...
+  - go test -race -vet=all ./...
+  - go run github.com/fzipp/gocyclo -top 20 .
+  - go run github.com/client9/misspell/cmd/misspell -error .
+  - go run github.com/gordonklaus/ineffassign .
