@@ -27,7 +27,7 @@ import (
 // BUG: the template loading is far from optimal, if debug is false and the loading fails we might end up in a broken situation
 
 type (
-	// RenderState holds information about the pug abstract syntax tree
+	// renderState holds information about the pug abstract syntax tree
 	renderState struct {
 		path         string
 		mixin        map[string]string

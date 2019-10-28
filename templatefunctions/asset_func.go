@@ -14,7 +14,7 @@ type (
 	AssetFunc struct {
 		Router  *web.Router   `inject:""`
 		Engine  *pugjs.Engine `inject:""`
-		BaseUrl string        `inject:"config:cdn.base_url,optional"`
+		BaseURL string        `inject:"config:cdn.base_url,optional"`
 	}
 )
 
@@ -46,9 +46,9 @@ func (af *AssetFunc) Func(ctx context.Context) interface{} {
 		resultURL, _ := af.Router.URL("_static", map[string]string{"n": result})
 		result = resultURL.String()
 
-		if af.BaseUrl != "" {
-			baseUrl := strings.TrimRight(af.BaseUrl, "/")
-			result = baseUrl + result
+		if af.BaseURL != "" {
+			baseURL := strings.TrimRight(af.BaseURL, "/")
+			result = baseURL + result
 		}
 
 		return template.URL(result)

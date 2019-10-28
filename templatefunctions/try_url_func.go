@@ -10,7 +10,7 @@ import (
 )
 
 type (
-	// URLFunc allows templates to access the routers `URL` helper method
+	// TryURLFunc allows templates to access the routers `URL` helper method
 	TryURLFunc struct {
 		Router *web.Router `inject:""`
 	}
