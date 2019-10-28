@@ -31,7 +31,7 @@ func (j JSON) Stringify(x interface{}) string {
 	return string(b)
 }
 
-// Stringify rounds a value up to the next biggest integer
+// Parse Stringify rounds a value up to the next biggest integer
 func (j JSON) Parse(x string) pugjs.Object {
 	m := make(map[string]interface{})
 	err := json.Unmarshal([]byte(x), &m)

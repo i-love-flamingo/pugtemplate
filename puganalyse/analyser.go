@@ -9,6 +9,7 @@ import (
 )
 
 type (
+	// AtomicDesignAnalyser struct
 	AtomicDesignAnalyser struct {
 		baseDir        string
 		HasError       bool
@@ -16,6 +17,7 @@ type (
 		CheckCount     int
 	}
 
+	// JsDependencyAnalyser struct
 	JsDependencyAnalyser struct {
 		baseDir             string
 		HasError            bool
@@ -24,6 +26,7 @@ type (
 	}
 )
 
+// NewAtomicDesignAnalyser returns a fresh AtomicDesignAnalyser
 func NewAtomicDesignAnalyser(baseDir string) AtomicDesignAnalyser {
 	return AtomicDesignAnalyser{
 		baseDir: baseDir,
@@ -32,6 +35,7 @@ func NewAtomicDesignAnalyser(baseDir string) AtomicDesignAnalyser {
 	}
 }
 
+// CheckPugImports - checking for required pug imports
 func (a *AtomicDesignAnalyser) CheckPugImports() {
 
 	a.checkPugsInDir(filepath.Join(a.baseDir, "atom"), false, []string{"atom"})
@@ -99,12 +103,14 @@ func (a *AtomicDesignAnalyser) checkPugsInDir(dir string, checkExtends bool, all
 	}
 }
 
+// NewJsDependencyAnalyser - returns a new JsDependencyAnalyser
 func NewJsDependencyAnalyser(baseDir string) JsDependencyAnalyser {
 	return JsDependencyAnalyser{
 		baseDir: baseDir,
 	}
 }
 
+// Check function
 func (a *JsDependencyAnalyser) Check() {
 	a.checkJsDep(a.baseDir)
 }

@@ -51,7 +51,7 @@ func (t NodeType) Type() NodeType {
 }
 
 const (
-	NodeText       NodeType = iota // Plain text.
+	NodeText       NodeType = iota // NodeText Plain text.
 	NodeAction                     // A non-control action such as a field evaluation.
 	NodeBool                       // A boolean constant.
 	NodeChain                      // A sequence of field accesses.
