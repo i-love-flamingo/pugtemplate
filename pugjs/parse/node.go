@@ -53,25 +53,25 @@ func (t NodeType) Type() NodeType {
 const (
 	// NodeText as plain text
 	NodeText       NodeType = iota // NodeText Plain text.
-	NodeAction                     // A non-control action such as a field evaluation.
-	NodeBool                       // A boolean constant.
-	NodeChain                      // A sequence of field accesses.
-	NodeCommand                    // An element of a pipeline.
-	NodeDot                        // The cursor, dot.
-	nodeElse                       // An else action. Not added to tree.
-	nodeEnd                        // An end action. Not added to tree.
-	NodeField                      // A field or method name.
-	NodeIdentifier                 // An identifier; always a function name.
-	NodeIf                         // An if action.
-	NodeList                       // A list of Nodes.
-	NodeNil                        // An untyped nil constant.
-	NodeNumber                     // A numerical constant.
-	NodePipe                       // A pipeline of commands.
-	NodeRange                      // A range action.
-	NodeString                     // A string constant.
-	NodeTemplate                   // A template invocation action.
-	NodeVariable                   // A $ variable.
-	NodeWith                       // A with action.
+	NodeAction                     // NodeAction - A non-control action such as a field evaluation.
+	NodeBool                       // NodeBool - A boolean constant.
+	NodeChain                      // NodeChain - A sequence of field accesses.
+	NodeCommand                    // NodeCommand - An element of a pipeline.
+	NodeDot                        // NodeDot - The cursor, dot.
+	nodeElse                       // nodeElse - An else action. Not added to tree.
+	nodeEnd                        // nodeEnd - An end action. Not added to tree.
+	NodeField                      // NodeField - A field or method name.
+	NodeIdentifier                 // NodeIdentifier - An identifier; always a function name.
+	NodeIf                         // NodeIf - An if action.
+	NodeList                       // NodeList - A list of Nodes.
+	NodeNil                        // NodeNil - An untyped nil constant.
+	NodeNumber                     // NodeNumber - A numerical constant.
+	NodePipe                       // NodePipe - A pipeline of commands.
+	NodeRange                      // NodeRange - A range action.
+	NodeString                     // NodeString - A string constant.
+	NodeTemplate                   // NodeTemplate - A template invocation action.
+	NodeVariable                   // NodeVariable - A $ variable.
+	NodeWith                       // NodeWith - A with action.
 )
 
 // Nodes.

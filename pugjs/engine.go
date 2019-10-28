@@ -46,6 +46,8 @@ type (
 
 	templateFuncProvider func() map[string]flamingo.TemplateFunc
 
+	key string
+
 	// Engine is the one and only javascript template engine for go ;)
 	Engine struct {
 		*sync.RWMutex
@@ -67,6 +69,10 @@ type (
 		engine *Engine
 		logger flamingo.Logger
 	}
+)
+
+const (
+	pageKey key = "page.template"
 )
 
 var (
@@ -244,7 +250,7 @@ func (e *Engine) Render(ctx context.Context, templateName string, data interface
 	if len(p) >= 2 && p[len(p)-2] != page {
 		page = p[len(p)-2] + p[len(p)-1]
 	}
-	ctx = context.WithValue(ctx, "page.template", "page"+page)
+	ctx = context.WithValue(ctx, pageKey, "page"+page)
 
 	// recompile, make sure to fully load only once!
 	if atomic.LoadInt32(&e.templatesLoaded) == 0 && !e.Debug {
