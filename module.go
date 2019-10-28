@@ -39,7 +39,7 @@ type (
 	}
 )
 
-// Open - open func
+// Open - opens a given pass and returns a file
 func (afs assetFileSystem) Open(path string) (http.File, error) {
 	path = strings.Replace(path, "/assets/", "", 1)
 
