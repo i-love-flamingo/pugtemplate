@@ -49,7 +49,7 @@ func (afs assetFileSystem) Open(path string) (http.File, error) {
 	}
 
 	s, err := f.Stat()
-	if err == nil || s.IsDir() {
+	if err != nil || s.IsDir() {
 		return nil, errors.New("not allowed")
 	}
 
