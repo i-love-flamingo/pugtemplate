@@ -16,3 +16,5 @@ require (
 	golang.org/x/text v0.3.1-0.20180807135948-17ff2d5776d2 // indirect
 	gopkg.in/sourcemap.v1 v1.0.5 // indirect
 )
+
+go 1.13
