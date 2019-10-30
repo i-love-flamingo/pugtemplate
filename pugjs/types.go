@@ -577,6 +577,8 @@ func (s String) Member(field string) Object {
 		return &Func{fnc: reflect.ValueOf(s.CharAt)}
 	case "toUpperCase":
 		return &Func{fnc: reflect.ValueOf(s.ToUpperCase)}
+	case "toLowerCase":
+		return &Func{fnc: reflect.ValueOf(s.ToLowerCase)}
 	case "split":
 		return &Func{fnc: reflect.ValueOf(s.Split)}
 	case "slice":
@@ -605,6 +607,9 @@ func (s String) IndexOf(delim string) int { return strings.Index(string(s), deli
 
 // ToUpperCase converter
 func (s String) ToUpperCase() string { return strings.ToUpper(string(s)) }
+
+// ToLowerCase converter
+func (s String) ToLowerCase() string { return strings.ToLower(string(s)) }
 
 // Split splitter
 func (s String) Split(delim string) []string { return strings.Split(string(s), delim) }
