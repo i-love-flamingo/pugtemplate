@@ -100,6 +100,11 @@ func TestString_Length(t *testing.T) {
 	assert.Equal(t, String("test123").Length(), 7)
 }
 
+func TestString_ToLowerCase(t *testing.T) {
+	assert.Equal(t, "test", String("TeSt").ToLowerCase())
+	assert.Equal(t, "test123", String("TeSt123").ToLowerCase())
+}
+
 func TestMap(t *testing.T) {
 	m := new(Map)
 	assert.False(t, m.True())
