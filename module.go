@@ -128,6 +128,7 @@ func (m *Module) Configure(injector *dingo.Injector) {
 	injector.BindMap((*flamingo.TemplateFunc)(nil), "stripTags").To(templatefunctions.StriptagsFunc{})
 	injector.BindMap((*flamingo.TemplateFunc)(nil), "capitalize").To(templatefunctions.CapitalizeFunc{})
 	injector.BindMap((*flamingo.TemplateFunc)(nil), "trim").To(templatefunctions.TrimFunc{})
+	injector.BindMap((*flamingo.TemplateFunc)(nil), "escapeHtml").To(templatefunctions.EscapeHTMLFunc{})
 
 	injector.BindMap((*flamingo.TemplateFunc)(nil), "asset").To(templatefunctions.AssetFunc{})
 	injector.BindMap((*flamingo.TemplateFunc)(nil), "data").To(templatefunctions.DataFunc{})
