@@ -72,7 +72,7 @@ type (
 )
 
 const (
-	pageKey key = "page.template"
+	PageKey key = "page.template"
 )
 
 var (
@@ -250,7 +250,7 @@ func (e *Engine) Render(ctx context.Context, templateName string, data interface
 	if len(p) >= 2 && p[len(p)-2] != page {
 		page = p[len(p)-2] + p[len(p)-1]
 	}
-	ctx = context.WithValue(ctx, pageKey, "page"+page)
+	ctx = context.WithValue(ctx, PageKey, "page"+page)
 
 	// recompile, make sure to fully load only once!
 	if atomic.LoadInt32(&e.templatesLoaded) == 0 && !e.Debug {
