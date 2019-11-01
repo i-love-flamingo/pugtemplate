@@ -72,6 +72,7 @@ type (
 )
 
 const (
+	// PageKey is used as constant in WithValue function and in module.go
 	PageKey key = "page.template"
 )
 
