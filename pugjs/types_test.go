@@ -109,3 +109,156 @@ func TestMap(t *testing.T) {
 	m := new(Map)
 	assert.False(t, m.True())
 }
+
+func TestArray_Sort(t *testing.T) {
+	input := convert([]string{"zuletzt", "test", "somewhere", "anfang", "anywhere"}).(*Array)
+	expectedResult := convert([]string{"anfang", "anywhere", "somewhere", "test", "zuletzt"}).(*Array)
+
+	input.Sort()
+	assert.Equal(t, expectedResult.items, input.items)
+}
+
+func TestIndex_Of(t *testing.T) {
+
+	tests := []struct {
+		name           string
+		input          *Array
+		search         string
+		expectedResult Number
+	}{
+		{
+			name:           "can be found at position 2",
+			input:          convert([]string{"can", "you", "find", "me"}).(*Array),
+			search:         "find",
+			expectedResult: Number(2),
+		},
+		{
+			name:           "i am hidden",
+			input:          convert([]string{"i", "am", "hidden"}).(*Array),
+			search:         "find",
+			expectedResult: Number(-1),
+		},
+	}
+
+	for _, tt := range tests {
+		assert.Equal(t, tt.expectedResult, tt.input.IndexOf(tt.search))
+	}
+
+}
+
+func TestArray_Pop(t *testing.T) {
+
+	tests := []struct {
+		name           string
+		input          *Array
+		expectedResult Object
+	}{
+		{
+			name:           "test pop with string",
+			input:          convert([]string{"something", "test", "somewhere", "whatever", "last"}).(*Array),
+			expectedResult: String("last"),
+		},
+		{
+			name:           "test pop with int",
+			input:          convert([]int{1, 2, 4, 3}).(*Array),
+			expectedResult: Number(3),
+		},
+	}
+
+	for _, tt := range tests {
+		assert.Equal(t, tt.expectedResult, tt.input.Pop())
+	}
+}
+
+func TestArray_True(t *testing.T) {
+	tests := []struct {
+		name           string
+		input          *Array
+		expectedResult bool
+	}{
+		{
+			name:           "length greater zero, should be true",
+			input:          convert([]int{1, 2, 4, 3}).(*Array),
+			expectedResult: true,
+		},
+		{
+			name:           "empty, should be false",
+			input:          convert([]int{}).(*Array),
+			expectedResult: false,
+		},
+	}
+
+	for _, tt := range tests {
+		assert.Equal(t, tt.expectedResult, tt.input.True())
+	}
+}
+
+func TestMap_Assign(t *testing.T) {
+	tests := []struct {
+		name           string
+		input          *Map
+		key            string
+		value          Object
+		expectedResult *Map
+	}{
+		{
+			name:           "empty map",
+			input:          new(Map),
+			key:            "first",
+			value:          String("something"),
+			expectedResult: &Map{items: map[string]Object{"first": String("something")}, o: interface{}(nil), order: []string{}},
+		},
+		{
+			name:           "map with existing key, replace value",
+			input:          &Map{items: map[string]Object{"first": String("something")}, o: interface{}(nil), order: []string{"first"}},
+			key:            "first",
+			value:          String("different"),
+			expectedResult: &Map{items: map[string]Object{"first": String("different")}, o: interface{}(nil), order: []string{"first"}},
+		},
+		{
+			name:           "map with new key, append",
+			input:          &Map{items: map[string]Object{"first": String("something")}, o: interface{}(nil), order: []string{"first"}},
+			key:            "second",
+			value:          String("append"),
+			expectedResult: &Map{items: map[string]Object{"first": String("something"), "second": String("append")}, o: interface{}(nil), order: []string{"first", "second"}},
+		},
+	}
+
+	for _, tt := range tests {
+		tt.input.Assign(tt.key, tt.value)
+		assert.Equal(t, tt.expectedResult, tt.input)
+	}
+}
+
+func TestMap_String(t *testing.T) {
+	tests := []struct {
+		name           string
+		input          *Map
+		expectedResult string
+	}{
+		{
+			name:           "nil map",
+			input:          nil,
+			expectedResult: "",
+		},
+		{
+			name:           "empty map",
+			input:          new(Map),
+			expectedResult: "{}",
+		},
+		{
+			name:           "a real map with a string",
+			input:          &Map{items: map[string]Object{"first": String("something")}, o: interface{}(nil), order: []string{"first"}},
+			expectedResult: "{\"first\":\"something\"}",
+		},
+		{
+			name:           "a real map with a value that has a string method",
+			input:          &Map{items: map[string]Object{"first": Bool(true)}, o: interface{}(nil), order: []string{"first"}},
+			expectedResult: "{\"first\":true}",
+		},
+	}
+
+	for _, tt := range tests {
+		assert.Equal(t, tt.expectedResult, tt.input.String())
+	}
+}
