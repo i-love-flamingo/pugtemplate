@@ -14,6 +14,7 @@ func TestRenderState_buildNode(t *testing.T) {
 		{&Token{Type: "Text", Val: "testText"}, &Text{ValueNode{Val: "testText"}}},
 		{&Token{Type: "Code", Val: "testCode"}, &Code{ValueNode: ValueNode{Val: "testCode"}}},
 		{&Token{Type: "Each"}, &Each{}},
+		{&Token{Type: "While"}, &While{}},
 		{&Token{Type: "NamedBlock"}, &Block{}},
 		{&Token{Type: "Block"}, &Block{}},
 		{&Token{Type: "Case"}, &Case{}},
