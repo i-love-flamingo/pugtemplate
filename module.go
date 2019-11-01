@@ -94,7 +94,7 @@ func (r *routes) Routes(registry *web.RouterRegistry) {
 	registry.Route("/static/*n", "_static")
 
 	registry.HandleData("page.template", func(ctx context.Context, _ *web.Request, _ web.RequestParams) interface{} {
-		return ctx.Value("page.template")
+		return ctx.Value(pugjs.PageKey)
 	})
 
 	registry.Route("/assets/*f", "_pugtemplate.assets")
