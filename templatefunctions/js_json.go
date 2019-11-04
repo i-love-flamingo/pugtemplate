@@ -22,7 +22,7 @@ func (jl JsJSON) Func(ctx context.Context) interface{} {
 	}
 }
 
-// Stringify rounds a value up to the next biggest integer
+// Stringify returns a string from the json
 func (j JSON) Stringify(x interface{}) string {
 	b, err := json.Marshal(x)
 	if err != nil {
@@ -31,7 +31,7 @@ func (j JSON) Stringify(x interface{}) string {
 	return string(b)
 }
 
-// Parse Stringify rounds a value up to the next biggest integer
+// Parse Stringify parses a string and returns an object
 func (j JSON) Parse(x string) pugjs.Object {
 	m := make(map[string]interface{})
 	err := json.Unmarshal([]byte(x), &m)
