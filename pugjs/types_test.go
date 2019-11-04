@@ -262,3 +262,35 @@ func TestMap_String(t *testing.T) {
 		assert.Equal(t, tt.expectedResult, tt.input.String())
 	}
 }
+
+func TestMap_HasMember(t *testing.T) {
+	tests := []struct {
+		name           string
+		input          *Map
+		member         string
+		expectedResult bool
+	}{
+		{
+			name:           "empty map",
+			input:          new(Map),
+			member:         "",
+			expectedResult: false,
+		},
+		{
+			name:           "map with member",
+			input:          &Map{items: map[string]Object{"first": String("something"), "findMe": String("something")}, o: interface{}(nil), order: []string{"first", "findMe"}},
+			member:         "findMe",
+			expectedResult: true,
+		},
+		{
+			name:           "map without member",
+			input:          &Map{items: map[string]Object{"first": String("something"), "findMeNot": String("something")}, o: interface{}(nil), order: []string{"first", "findMeNot"}},
+			member:         "findMe",
+			expectedResult: false,
+		},
+	}
+
+	for _, tt := range tests {
+		assert.Equal(t, tt.expectedResult, tt.input.HasMember(tt.member))
+	}
+}
