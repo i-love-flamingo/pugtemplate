@@ -251,6 +251,12 @@ func (a *Array) Member(name string) Object {
 	case "pop":
 		return &Func{fnc: reflect.ValueOf(a.Pop)}
 
+	case "shift":
+		return &Func{fnc: reflect.ValueOf(a.Shift)}
+
+	case "unshift":
+		return &Func{fnc: reflect.ValueOf(a.Unshift)}
+
 	case "splice":
 		return &Func{fnc: reflect.ValueOf(a.Splice)}
 
@@ -326,6 +332,19 @@ func (a *Array) Pop() Object {
 	last := a.items[len(a.items)-1]
 	a.items = a.items[:len(a.items)-1]
 	return last
+}
+
+// Shift removes an element from the beginning of the array and returns the element
+func (a *Array) Shift() Object {
+	first := a.items[0]
+	a.items = a.items[1:len(a.items)]
+	return first
+}
+
+// Unshift adds an element to the beginning of the array and returns the new length
+func (a *Array) Unshift(elements ...Object) int {
+	a.items = append(elements, a.items...)
+	return len(a.items)
 }
 
 // True getter
