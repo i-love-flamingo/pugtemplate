@@ -1,9 +1,11 @@
 package templatefunctions
 
 import (
+	"math/big"
+	"testing"
+
 	"flamingo.me/pugtemplate/pugjs"
 	"github.com/stretchr/testify/assert"
-	"testing"
 )
 
 func TestParseInt_Func(t *testing.T) {
@@ -61,6 +63,11 @@ func TestParseInt_Func(t *testing.T) {
 			name:  "bool",
 			input: false,
 			want:  0,
+		},
+		{
+			name:  "big float",
+			input: *big.NewFloat(123),
+			want:  123,
 		},
 	}
 
