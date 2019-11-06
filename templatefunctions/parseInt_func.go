@@ -1,6 +1,7 @@
 package templatefunctions
 
 import (
+	"math/big"
 	"reflect"
 	"strconv"
 )
@@ -10,6 +11,7 @@ type (
 	ParseInt struct{}
 )
 
+// big.Float isn't mapped by the reflect package, but returns a value of 25
 const bigFloatKind reflect.Kind = 25
 
 // Func tries to parse any type into an integer, it is checking for pugjs types and also for regular types
@@ -30,6 +32,13 @@ func (p *ParseInt) Func() interface{} {
 			return int(value.Int())
 		case reflect.Float32:
 			return int(value.Float())
+		case bigFloatKind:
+			bigFloat, ok := in.(big.Float)
+			if !ok {
+				break
+			}
+			integer64, _ := bigFloat.Int64()
+			return int(integer64)
 		default:
 			v := reflect.Indirect(value)
 			intType := reflect.TypeOf(int(0))
