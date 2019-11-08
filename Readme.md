@@ -71,13 +71,9 @@ To make this possible Flamingo rewrites the JavaScript to Go, on the fly.
 
 ```jade
 - var object = {"key": "value"}
-
 - var array = [1, 2, 3, 4, 5]
-
 - var concat_string = "string" + "another string"
-
 - var add = 1 + 2
-
 - var multiply = 15 * 8
 ```
 
