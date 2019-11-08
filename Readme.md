@@ -2,43 +2,38 @@
 
 [![Go Report Card](https://goreportcard.com/badge/github.com/i-love-flamingo/pugtemplate)](https://goreportcard.com/report/github.com/i-love-flamingo/pugtemplate) [![GoDoc](https://godoc.org/github.com/i-love-flamingo/pugtemplate?status.svg)](https://godoc.org/github.com/i-love-flamingo/pugtemplate) [![Build Status](https://travis-ci.org/i-love-flamingo/pugtemplate.svg)](https://travis-ci.org/i-love-flamingo/pugtemplate)
 
-## pug.js
+## Pug js
 
 [Pug](https://pugjs.org/api/getting-started.html) is a JavaScript template rendering engine.
  
 ## Flamingo Pug Template
 
-The Flamingo `flamingo.me/pugtemplate` package is a flamingo template module to use pug.js templates.
+The Flamingo `flamingo.me/pugtemplate` package is a flamingo template module to use Pug templates.
 
-Basically pug.js is by default compiled to JavaScript, and executed as HTML.
-
-This mechanism is used to render static prototypes for the templates, so the usual HTML prototype is
+Pug.js is by default compiled to JavaScript, and executed as HTML. This mechanism is used to render static prototypes for the templates, so the usual HTML prototype is
 just a natural artifact of this templating, instead of an extra workflow step or custom tool.
 
-This allows frontend developers to start templating very early with very few backend support,
-yet without the need to rewrite everything or even learn a new template language.
+This allows frontend developers to start templating very early with very few backend support, and without the need to rewrite chunks or even learn a new template language.
 
-Also the static prototype can be used to test/analyze the UI in early project phases, while the backend
-might not be done yet.
+The static prototype can be used to test/analyze the UI in early project phases, when the backend might not be ready yet.
 
-The way pug.js works is essentially this:
+The way pug.js works is essentially the following:
 
 ```
 template -[tokenizer]-> tokens -[parser]-> AST -[compiler]-> JavaScript -[runtime]-> HTML
 ```
 
-To integrate this with Flamingo we save the AST (abstract syntax tree) in a json representation.
-pug_template will use a parser to build an internal in-memory tree of the concrete building
-blocks, and then use a render to transform these blocks into actual go template with HTML.
+To integrate it in Flamingo, we save the AST (abstract syntax tree) in a JSON representations. Pugtemplate will use a parser to build an in-memory tree of the concrete building blocks. It then will use a renderer to transform these blocks into HTML Go templates as follows:
 
 ```
 AST -[parser]-> Block tree -[render]-> go template -[go-template-runtime]-> HTML
 ```
 
-(You can also view the intermediate result under https://flamingoURL/_pugtpl/debug?tpl=home/home)
+It is possible to view the intermediate result by https://your_flamingo_url/_pugtpl/debug?tpl=home/home
 
-One of the features of pug.js is the possibility to use arbitrary JavaScript in case the template syntax
-does not provide the correct functions. This is used for example in loops like
+### Templating
+
+One feature of pug.js is the possibility to use arbitrary JavaScript in cases where the template syntax does not provide the some functionality. For example, loops can be written as below:
 
 ```jade
 ul
@@ -46,63 +41,72 @@ ul
     li= index + ': ' + val
 ```
 
-The term `['zero', 'one', 'two']` is actual JavaScript, and a developer is able to use more advanced
-code like
+In this example the term `['zero', 'one', 'two']` is in JavaScript. Developers will be able to use more advanced code:
 
 ```jade
-- prefix = 'foo'
+- var prefix = 'foo_'
 ul
   each val, index in [prefix+'zero', prefix+'one', prefix+'two']
     li= index + ': ' + val
 ```
 
-The pug_template module takes this JavaScript and uses the go-based JS engine otto to parse the JavaScript
-and transpile it into actual go code.
-While this works for some standard statements and language constructs (default datatypes such as maps, list, etc),
-this does not support certain things such as OOP or the JS stdlib.
+The pug_template module takes this JavaScript and uses the Go-based JS engine, otto, to parse the JavaScript and transpile it into Go code.
+While this works for most standard statements and language constructs (default data types such as maps, list, etc), it does not support certain things such as Object Oriented Programming or the JavaScript standard library. Only snippets of JavaScript code can be run.
 
-It is, however, possible to recreate such functionality in a third-party module via Flamingo's template functions.
-For example pug_template itself has a substitute for the JavaScript `Math` library with the `min`, `max` and `ceil`
-functions. Please note that these function have to use reflection and it's up to the implementation to properly
-reflect the functionality and handle different inputs correctly.
+However, it is possible to recreate such functionalities in a third-party module via Flamingo's template functions.
+For example pug_template itself has a substitute for the JavaScript `Math` library with the `min`, `max` and `ceil` functions. Please note that these function have to use reflection and it's up to the implementation to properly reflect the functionality and handle different inputs correctly.
 
-After all extensive usage of JavaScript is not advised.
+Nevertheless, extensive usage of JavaScript is not advised.
 
 ## Dynamic JavaScript
 
 The Pug Template engine compiles a subset of JavaScript (ES2015) to Go templates.
-This allows frontend developers to use known workflows and techniques, instead of learning
-a complete new template engine.
+This allows frontend developers to use known a syntax and techniques, instead of learning a complete new template engine.
 
-To make this possible Flamingo rewrites the JavaScript to go, on the fly.
+To make this possible Flamingo rewrites the JavaScript to Go, on the fly.
 
 ## Supported JavaScript
 
 ### Standard Datatypes
 
 ```javascript
-{"key": "value"}
+var object = {"key": "value"}
 
-"string" + "another string"
+var array = [1, 2, 3, 4, 5]
 
-1 + 2
+var concat_string = "string" + "another string"
 
-15 * 8
+var add = 1 + 2
 
-[1, 2, 3, 4, 5]
+var multiply = 15 * 8
 ```
 
-## Support Pug
+## Supported Pug
 
 ### Interpolation
 
-```pug
+```jade
 p Text #{variable} something #{1 + 2}
 ```
 
-### Mixins
+### Conditions
+```jade
+if string === "true"
+ p Do something
+else if string === "other"
+ p Do something else
+else
+ p Do default
+```
 
-```pug
+### Loops
+```jade
+each value, index in  ["a", "b", "c"]
+  p value #{value} at #{index}
+```
+
+### Mixins
+```jade
 mixin mymixin(arg1, arg2="default)
   p.something(id=arg2)= arg1
   
@@ -111,11 +115,11 @@ mixin mymixin(arg1, arg2="default)
 +mymixin("foo", "bar")
 ```
 
-### Loops
+### Includes
+```jade
+include /mixin/mymixin
 
-```pug
-each value, index in  ["a", "b", "c"]
-  p value #{value} at #{index}
++mymixing("foo")
 ```
 
 ## Debugging
@@ -126,10 +130,9 @@ Templates can be debugged via `/_pugtpl/debug?tpl=pages/product/view`
 ## Partials Rendering
 
 The template engine supports rendering of partials.
-The idea of partials is to support progressive enhancement by being able to request just a part (partial) of the content from the browser.
-The partial will still be rendered serverside and should be requested by an ajax call from the browser.
+The idea of partials is to support progressive enhancement by being able to request just a chunk of content from the browser. The partial will still be rendered server side and should be requested by an ajax call from the browser.
 
-Partials are requested by setting the http Header `X-Partial`
+Partials are requested by setting the HTTP Header `X-Partial`
 
 The requested partials are searched in a subfolder "{templatename}.partials"
 
@@ -150,7 +153,7 @@ The engine will search for partials in `folder/template.partials/foo.pug` and `f
 }
 ```
 
-If you call `setPartialData` in this templates, you can add additional data to the json response. For example:
+If you call the template function `setPartialData` in this templates, you can add additional data to the json response. For example:
 
 ```
 setPartialData("cartamount", 4)
