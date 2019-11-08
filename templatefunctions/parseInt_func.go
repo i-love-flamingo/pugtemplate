@@ -1,6 +1,7 @@
 package templatefunctions
 
 import (
+	"context"
 	"math/big"
 	"reflect"
 	"strconv"
@@ -15,7 +16,7 @@ type (
 const bigFloatKind reflect.Kind = 25
 
 // Func tries to parse any type into an integer, it is checking for pugjs types and also for regular types
-func (p *ParseInt) Func() interface{} {
+func (p *ParseInt) Func(ctx context.Context) interface{} {
 	return func(in interface{}) int {
 
 		value := reflect.ValueOf(in)
