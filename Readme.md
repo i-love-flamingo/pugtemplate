@@ -143,7 +143,7 @@ return cc.responder.Render("folder/template")
 
 And you request that page with the Header `X-Partial: foo,bar`
 
-The engine will search for partials in `folder/template.partials/foo.pug` and `folder/template.partials/bar.pug` and just render them and return them wrapped in a JSON response like this:
+The engine will search for partials in `folder/template.partials/foo.pug` and `folder/template.partials/bar.pug` and just render them and return them wrapped in a JSON response:
 ```
 {
     "partials": {
