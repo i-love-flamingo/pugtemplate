@@ -1,6 +1,7 @@
 package templatefunctions
 
 import (
+	"context"
 	"math/big"
 	"testing"
 
@@ -73,7 +74,7 @@ func TestParseInt_Func(t *testing.T) {
 
 	for _, tt := range tests {
 		tmplFunc := new(ParseInt)
-		parseIntFunc := tmplFunc.Func().(func(o interface{}) int)
+		parseIntFunc := tmplFunc.Func(context.Background()).(func(o interface{}) int)
 		assert.Equal(t, tt.want, parseIntFunc(tt.input), "Testcase: %v - this values should be the same", tt.name)
 	}
 }

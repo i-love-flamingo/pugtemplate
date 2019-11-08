@@ -1,6 +1,7 @@
 package templatefunctions
 
 import (
+	"context"
 	"math/big"
 	"testing"
 
@@ -78,7 +79,7 @@ func TestParseFloat_Func(t *testing.T) {
 
 	for _, tt := range tests {
 		tmplFunc := new(ParseFloat)
-		parseFloatFunc := tmplFunc.Func().(func(o interface{}) float64)
+		parseFloatFunc := tmplFunc.Func(context.Background()).(func(o interface{}) float64)
 		assert.Equal(t, tt.want, parseFloatFunc(tt.input), "Testcase: %v - this values should be the same", tt.name)
 	}
 }

@@ -1,6 +1,7 @@
 package templatefunctions
 
 import (
+	"context"
 	"math/big"
 	"reflect"
 	"strconv"
@@ -12,7 +13,7 @@ type (
 )
 
 // Func tries to parse any type into a float64, it is checking for pugjs types and also for regular types
-func (p *ParseFloat) Func() interface{} {
+func (p *ParseFloat) Func(ctx context.Context) interface{} {
 	return func(in interface{}) float64 {
 		value := reflect.ValueOf(in)
 
