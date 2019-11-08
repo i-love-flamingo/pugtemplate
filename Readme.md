@@ -98,7 +98,7 @@ The technical documentation of the array struct can be found on [GoDoc](https://
 Note that the splice and slice functions only have a start index.
 
 #### Objects
-Javascript Object have been transcribed as Go Maps. The technical documentation of the objects/Pugjs.Maps struct can be found on [GoDoc](hhttps://godoc.org/flamingo.me/pugtemplate/pugjs#Map). As a short summary, the following functions are publicly available:
+Javascript Object have been transcribed as Go Maps. The technical documentation of the objects/Pugjs.Maps struct can be found on [GoDoc](https://godoc.org/flamingo.me/pugtemplate/pugjs#Map). As a short summary, the following functions are publicly available:
 ``` jade
 - var myObject = {"a": 1, "b": 2}
 - myObject.keys() // returns an array of keys ["a","b"]
