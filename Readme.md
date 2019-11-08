@@ -67,36 +67,87 @@ To make this possible Flamingo rewrites the JavaScript to Go, on the fly.
 
 ## Supported JavaScript
 
-### Standard Datatypes
+### Standard Data types
 
-```javascript
-var object = {"key": "value"}
+```jade
+- var object = {"key": "value"}
 
-var array = [1, 2, 3, 4, 5]
+- var array = [1, 2, 3, 4, 5]
 
-var concat_string = "string" + "another string"
+- var concat_string = "string" + "another string"
 
-var add = 1 + 2
+- var add = 1 + 2
 
-var multiply = 15 * 8
+- var multiply = 15 * 8
 ```
+
+Those types have been reflected in Go in a form structs as Pugjs.Object, Pugjs.Map, Pugjs.Array, Pugjs.String and Pugjs.Number.
+
+### Supported prototype functions
+
+#### Array
+The technical documentation of the array struct can be found on [GoDoc](https://godoc.org/flamingo.me/pugtemplate/pugjs#Array). As a short summary, the following functions are publicly available:
+``` jade
+- var myArray = [1,2,3,4,5]
+- myArray.indexOf(3) // returns 2
+- myArray.length // return 5
+- myArray.join(', ') // joins the values of the array by the given separator: "1, 2, 3, 4, 5"
+- myArray.push(6) // returns [1,2,3,4,5,6]
+- myArray.pop() // returns 6 and myArray equals [1,2,3,4,5]
+- myArray.splice(4) // return [5] and myArray equals [1,2,3,4]
+- myArray.slice(2) // returns [1,2]
+- myArray.sort() // sorts alphabetically or numerically the array
+```
+
+Note that the splice and slice functions only have a start index.
+
+#### Objects
+Javascript Object have been transcribed as Go Maps. The technical documentation of the objects/Pugjs.Maps struct can be found on [GoDoc](hhttps://godoc.org/flamingo.me/pugtemplate/pugjs#Map). As a short summary, the following functions are publicly available:
+``` jade
+- var myObject = {"a": 1, "b": 2}
+- myObject.keys() // returns an array of keys ["a","b"]
+- myObject.assign("c", 3) // assigns a new property by key myObject equals {"a": 1, "b": 2, "c":3}
+- myObject.hasMember(a) // True
+- myObject.hasMember(z) // False
+```
+
+#### Strings
+The technical documentation of the string struct can be found on [GoDoc](https://godoc.org/flamingo.me/pugtemplate/pugjs#String). As a short summary, the following functions are publicly available:
+``` jade
+- var myString = "This is a nice string"
+- myString.length // returns 21
+- myString.indexOf("h") // returns 1
+- myString.charAt(4) // returns "s"
+- myString.toUpperCase() // returns "THIS IS A NICE STRING"
+- myString.toLowerCase() // returns "this is a nice string"
+- myString.replace("is", "was") // returns "this was a nice string" 
+- myString.split(" ") // returns ["this","was","a","nice","string"]
+- myString.slice(1, 4) // returns "his"
+```
+
+### Supported template functions
+
+TODO
 
 ## Supported Pug
 
 ### Interpolation
 
 ```jade
-p Text #{variable} something #{1 + 2}
+- var a = "this"
+p Text #{a} something #{1 + 2}
 ```
 
 ### Conditions
 ```jade
-if string === "true"
- p Do something
-else if string === "other"
- p Do something else
+- var user = { description: 'foo bar baz' }
+- var authorised = false
+if user.description
+    p {user.description}
+else if authorised
+    p Authorised
 else
- p Do default
+    p Not authorised
 ```
 
 ### Loops
@@ -107,7 +158,7 @@ each value, index in  ["a", "b", "c"]
 
 ### Mixins
 ```jade
-mixin mymixin(arg1, arg2="default)
+mixin mymixin(arg1, arg2="default")
   p.something(id=arg2)= arg1
   
 +mymixing("foo")
