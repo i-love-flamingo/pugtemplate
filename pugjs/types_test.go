@@ -170,6 +170,88 @@ func TestArray_Pop(t *testing.T) {
 	}
 }
 
+func TestArray_Shift(t *testing.T) {
+
+	tests := []struct {
+		name           string
+		input          *Array
+		expectedArray  *Array
+		expectedResult Object
+	}{
+		{
+			name:           "test shift with string",
+			input:          convert([]string{"something", "test", "somewhere", "whatever", "last"}).(*Array),
+			expectedArray:  convert([]string{"test", "somewhere", "whatever", "last"}).(*Array),
+			expectedResult: String("something"),
+		},
+		{
+			name:           "test shift with int",
+			input:          convert([]int{1, 2, 4, 3}).(*Array),
+			expectedArray:  convert([]int{2, 4, 3}).(*Array),
+			expectedResult: Number(1),
+		},
+		{
+			name:           "test shift with int and array of length 1",
+			input:          convert([]int{7}).(*Array),
+			expectedArray:  convert([]int{}).(*Array),
+			expectedResult: Number(7),
+		},
+		{
+			name:           "test shift with int and empty input array",
+			input:          convert([]int{}).(*Array),
+			expectedArray:  convert([]int{}).(*Array),
+			expectedResult: nil,
+		},
+	}
+
+	for _, tt := range tests {
+		array := tt.input
+		result := array.Shift()
+		assert.Equal(t, tt.expectedResult, result)
+		assert.Equal(t, tt.expectedArray.items, array.items)
+	}
+}
+
+func TestArray_Unshift(t *testing.T) {
+
+	tests := []struct {
+		name           string
+		array          *Array
+		addElement     Object
+		expectedResult *Array
+		expectedLength int
+	}{
+		{
+			name:           "test unshift with string",
+			array:          convert([]string{"something", "test"}).(*Array),
+			addElement:     String("first"),
+			expectedResult: convert([]string{"first", "something", "test"}).(*Array),
+			expectedLength: 3,
+		},
+		{
+			name:           "test unshift with int",
+			array:          convert([]int{4, 3}).(*Array),
+			addElement:     Number(1),
+			expectedResult: convert([]int{1, 4, 3}).(*Array),
+			expectedLength: 3,
+		},
+		{
+			name:           "test unshift with int and string",
+			array:          convert([]int{4, 3}).(*Array),
+			addElement:     String("one more"),
+			expectedResult: convert([]Object{String("one more"), Number(4), Number(3)}).(*Array),
+			expectedLength: 3,
+		},
+	}
+
+	for _, tt := range tests {
+		array := tt.array
+		length := array.Unshift(tt.addElement)
+		assert.Equal(t, tt.expectedLength, length)
+		assert.Equal(t, tt.expectedResult.items, array.items)
+	}
+}
+
 func TestArray_True(t *testing.T) {
 	tests := []struct {
 		name           string
