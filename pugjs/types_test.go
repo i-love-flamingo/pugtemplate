@@ -235,6 +235,13 @@ func TestArray_Unshift(t *testing.T) {
 			expectedResult: convert([]int{1, 4, 3}).(*Array),
 			expectedLength: 3,
 		},
+		{
+			name:           "test unshift with int and string",
+			array:          convert([]int{4, 3}).(*Array),
+			addElement:     String("one more"),
+			expectedResult: convert([]Object{String("one more"), Number(4), Number(3)}).(*Array),
+			expectedLength: 3,
+		},
 	}
 
 	for _, tt := range tests {
