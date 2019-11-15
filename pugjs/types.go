@@ -336,9 +336,12 @@ func (a *Array) Pop() Object {
 
 // Shift removes an element from the beginning of the array and returns the element
 func (a *Array) Shift() Object {
-	first := a.items[0]
-	a.items = a.items[1:len(a.items)]
-	return first
+	if len(a.items) > 0 {
+		first := a.items[0]
+		a.items = a.items[1:len(a.items)]
+		return first
+	}
+	return nil
 }
 
 // Unshift adds an element to the beginning of the array and returns the new length

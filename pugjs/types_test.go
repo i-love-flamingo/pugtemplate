@@ -190,6 +190,18 @@ func TestArray_Shift(t *testing.T) {
 			expectedArray:  convert([]int{2, 4, 3}).(*Array),
 			expectedResult: Number(1),
 		},
+		{
+			name:           "test shift with int and array of length 1",
+			input:          convert([]int{7}).(*Array),
+			expectedArray:  convert([]int{}).(*Array),
+			expectedResult: Number(7),
+		},
+		{
+			name:           "test shift with int and empty input array",
+			input:          convert([]int{}).(*Array),
+			expectedArray:  convert([]int{}).(*Array),
+			expectedResult: nil,
+		},
 	}
 
 	for _, tt := range tests {
