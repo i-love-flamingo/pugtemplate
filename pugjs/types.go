@@ -338,7 +338,7 @@ func (a *Array) Pop() Object {
 func (a *Array) Shift() Object {
 	if len(a.items) > 0 {
 		first := a.items[0]
-		a.items = a.items[1:len(a.items)]
+		a.items = a.items[1:]
 		return first
 	}
 	return nil
