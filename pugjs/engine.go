@@ -62,6 +62,8 @@ type (
 		EventRouter     flamingo.EventRouter `inject:""`
 		FuncProvider    templateFuncProvider `inject:""`
 		Logger          flamingo.Logger      `inject:""`
+		Ratelimit       float64              `inject:"config:pug_template.ratelimit"`
+		ratelimit       chan struct{}
 	}
 
 	// EventSubscriber is the event subscriber for Engine
@@ -100,6 +102,8 @@ func NewEngine(debugsetup *struct {
 	return &Engine{
 		RWMutex:      new(sync.RWMutex),
 		TemplateCode: make(map[string]string),
+		ratelimit:    make(chan struct{}, 8),
+		Ratelimit:    8,
 	}
 }
 
@@ -132,6 +136,10 @@ func (e *EventSubscriber) Notify(_ context.Context, event flamingo.Event) {
 func (e *Engine) LoadTemplates(filtername string) error {
 	e.Lock()
 	defer e.Unlock()
+
+	if e.Ratelimit > 0 {
+		e.ratelimit = make(chan struct{}, int(e.Ratelimit))
+	}
 
 	if !atomic.CompareAndSwapInt32(&e.templatesLoaded, 0, 1) && filtername == "" {
 		return errors.New("Can not preload all templates again")
@@ -218,8 +226,6 @@ func (e *Engine) compileDir(root, dirname, filtername string) (map[string]*Templ
 	return result, nil
 }
 
-var renderChan = make(chan struct{}, 8)
-
 var _ flamingo.TemplateEngine = new(Engine)
 var _ flamingo.PartialTemplateEngine = new(Engine)
 
@@ -247,11 +253,13 @@ func (e *Engine) Render(ctx context.Context, templateName string, data interface
 	span.Annotate(nil, templateName)
 
 	// block if buffered channel size is reached
-	renderChan <- struct{}{}
-	defer func() {
-		// release one entry from channel (will release one block)
-		<-renderChan
-	}()
+	if e.Ratelimit > 0 {
+		e.ratelimit <- struct{}{}
+		defer func() {
+			// release one entry from channel (will release one block)
+			<-e.ratelimit
+		}()
+	}
 
 	p := strings.Split(templateName, "/")
 	for i, v := range p {
