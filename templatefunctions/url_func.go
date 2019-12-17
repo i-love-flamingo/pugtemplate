@@ -13,9 +13,9 @@ import (
 type (
 	// URLFunc allows templates to access the routers `URL` helper method
 	URLFunc struct {
-		Router *web.Router `inject:""`
-		Logger flamingo.Logger `inject:""`
-		DebugMode bool `inject:"config:debug.mode"`
+		Router    *web.Router     `inject:""`
+		Logger    flamingo.Logger `inject:""`
+		DebugMode bool            `inject:"config:debug.mode"`
 	}
 )
 
@@ -69,12 +69,10 @@ func (u *URLFunc) Func(ctx context.Context) interface{} {
 	}
 }
 
-
-func (u *URLFunc)  panicOrError(v interface{}) {
+func (u *URLFunc) panicOrError(v interface{}) {
 	if u.DebugMode {
 		panic(v)
 	} else {
-		u.Logger.WithField(flamingo.LogKeyModule,"pugtemplate").WithField(flamingo.LogKeyCategory,"urltemplatefunc").Error(v)
+		u.Logger.WithField(flamingo.LogKeyModule, "pugtemplate").WithField(flamingo.LogKeyCategory, "urltemplatefunc").Error(v)
 	}
 }
-
