@@ -79,6 +79,9 @@ const (
 var (
 	rt             = stats.Int64("flamingo/pugtemplate/render", "pugtemplate render times", stats.UnitMilliseconds)
 	templateKey, _ = tag.NewKey("template")
+
+	debugMode      = false
+	loggerInstance flamingo.Logger
 )
 
 func init() {
@@ -86,7 +89,14 @@ func init() {
 }
 
 // NewEngine constructor
-func NewEngine() *Engine {
+func NewEngine(debugsetup *struct {
+	Debug  bool            `inject:"config:debug.mode"`
+	Logger flamingo.Logger `inject:""`
+}) *Engine {
+	if debugsetup != nil {
+		setLoggerInfos(debugsetup.Logger, debugsetup.Debug)
+	}
+
 	return &Engine{
 		RWMutex:      new(sync.RWMutex),
 		TemplateCode: make(map[string]string),
@@ -299,4 +309,24 @@ func (e *Engine) Render(ctx context.Context, templateName string, data interface
 	}
 
 	return result, nil
+}
+
+//setLoggerInfos - used to set the package variables used in the panicOrError method
+func setLoggerInfos(logger flamingo.Logger, d bool) {
+	if logger == nil {
+		return
+	}
+	debugMode = d
+	loggerInstance = logger
+}
+
+func panicOrError(v interface{}) {
+	if loggerInstance == nil {
+		panic(v)
+	}
+	if debugMode {
+		panic(v)
+	} else {
+		loggerInstance.Error(v)
+	}
 }

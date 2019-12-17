@@ -2,6 +2,7 @@ package templatefunctions
 
 import (
 	"context"
+	"flamingo.me/flamingo/v3/framework/flamingo"
 	"html/template"
 	"net/url"
 
@@ -12,7 +13,9 @@ import (
 type (
 	// URLFunc allows templates to access the routers `URL` helper method
 	URLFunc struct {
-		Router *web.Router `inject:""`
+		Router    *web.Router     `inject:""`
+		Logger    flamingo.Logger `inject:""`
+		DebugMode bool            `inject:"config:debug.mode"`
 	}
 )
 
@@ -50,7 +53,11 @@ func (u *URLFunc) Func(ctx context.Context) interface{} {
 				}
 			}
 		}
-		url, _ := u.Router.URL(where, p)
+		url, err := u.Router.Relative(where, p)
+		if err != nil {
+			u.panicOrError(err)
+			return ""
+		}
 		query := url.Query()
 		for k, v := range q {
 			for _, i := range v {
@@ -59,5 +66,13 @@ func (u *URLFunc) Func(ctx context.Context) interface{} {
 		}
 		url.RawQuery = query.Encode()
 		return template.URL(url.String())
+	}
+}
+
+func (u *URLFunc) panicOrError(v interface{}) {
+	if u.DebugMode {
+		panic(v)
+	} else {
+		u.Logger.WithField(flamingo.LogKeyModule, "pugtemplate").WithField(flamingo.LogKeyCategory, "urltemplatefunc").Error(v)
 	}
 }
