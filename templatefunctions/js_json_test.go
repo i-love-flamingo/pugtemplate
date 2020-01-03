@@ -18,9 +18,11 @@ func TestJsJSON(t *testing.T) {
 
 func TestJSON_Parse(t *testing.T) {
 	var jsJSON flamingo.TemplateFunc = new(JsJSON)
-
 	json := jsJSON.Func(context.Background()).(func() JSON)()
-	result := json.Parse(`{"foo":123}`)
 
-	assert.Implements(t, (*pugjs.Object)(nil), result)
+	obj := json.Parse(`{"foo":123}`)
+	assert.Implements(t, (*pugjs.Object)(nil), obj)
+
+	arr := json.Parse(`["testing123", 123, {"an": "object"}]`)
+	assert.Implements(t, (*pugjs.Object)(nil), arr)
 }
