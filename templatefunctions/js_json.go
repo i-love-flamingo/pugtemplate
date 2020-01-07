@@ -33,7 +33,7 @@ func (j JSON) Stringify(x interface{}) string {
 
 // Parse Stringify parses a string and returns an object
 func (j JSON) Parse(x string) pugjs.Object {
-	m := make(map[string]interface{})
+	var m interface{}
 	err := json.Unmarshal([]byte(x), &m)
 	if err != nil {
 		panic(err)
