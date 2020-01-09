@@ -213,12 +213,12 @@ func AnalyseCommand() func(cmd *cobra.Command, args []string) {
 // DefaultConfig for setting pug-related config options
 func (m *Module) DefaultConfig() config.Map {
 	return config.Map{
-		"pug_template.basedir":                 "frontend/dist",
-		"pug_template.debug":                   true,
-		"pug_template.cors_whitelist":          config.Slice{"http://localhost:3210"},
-		"imageservice.base_url":                "-",
-		"imageservice.secret":                  "-",
-		"opencensus.tracing.sampler.blacklist": config.Slice{"/static", "/assets"},
+		"pug_template.basedir":                          "frontend/dist",
+		"pug_template.debug":                            true,
+		"pug_template.cors_whitelist":                   config.Slice{"http://localhost:3210"},
+		"imageservice.base_url":                         "-",
+		"imageservice.secret":                           "-",
+		"flamingo.opencensus.tracing.sampler.blacklist": config.Slice{"/static", "/assets"},
 	}
 }
 
