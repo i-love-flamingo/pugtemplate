@@ -3,14 +3,13 @@ package pugjs
 import (
 	"fmt"
 	"html/template"
+	"io"
 	"strings"
 
-	"io"
-
+	"flamingo.me/pugtemplate/otto/ast"
+	ottoparser "flamingo.me/pugtemplate/otto/parser"
+	"flamingo.me/pugtemplate/otto/token"
 	"github.com/pkg/errors"
-	"github.com/robertkrimen/otto/ast"
-	ottoparser "github.com/robertkrimen/otto/parser"
-	"github.com/robertkrimen/otto/token"
 )
 
 var (
