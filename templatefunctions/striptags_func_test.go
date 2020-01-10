@@ -30,7 +30,7 @@ func TestStriptagsFunc(t *testing.T) {
 		{
 			"should keep whitelisted attributes",
 			"<p>I'm a paragraph containing a <a href=\"http://tld.com\" style=\"font-size:100px\">link</a></p>",
-			"<p>I'm a paragraph containing a <a href=\"http://tld.com\">link</a></p>",
+			"<p>I&#39;m a paragraph containing a <a href=\"http://tld.com\">link</a></p>",
 			config.Slice{"p", "a(href)"},
 		},
 		{
@@ -68,6 +68,30 @@ func TestStriptagsFunc(t *testing.T) {
 			`<input disabled name="remove-me"/>`,
 			`<input disabled />`,
 			config.Slice{"input(disabled)"},
+		},
+		{
+			name:        "should filter script tag with only simple html tags allowed",
+			in:          "<script>alert('security!');</script>",
+			out:         "alert(&#39;security!&#39;);",
+			allowedTags: config.Slice{"p"},
+		},
+		{
+			name:        "should filter script tag with escaped input",
+			in:          "<p>&lt;script&gt;alert('security');&lt;/script&gt;</p>",
+			out:         "<p>&lt;script&gt;alert(&#39;security&#39;);&lt;/script&gt;</p>",
+			allowedTags: config.Slice{"p"},
+		},
+		{
+			name:        "should filter script tag",
+			in:          "<p><script>alert('security')</script></p>",
+			out:         "<p>alert(&#39;security&#39;)</p>",
+			allowedTags: config.Slice{"p"},
+		},
+		{
+			name:        "should filter illegal tag which is escaped and surrounded by other tags",
+			in:          "<p><b>test</b>&lt;script&gt;alert('security');&lt;/script&gt;<b>test</b></p>",
+			out:         "<p><b>test</b>&lt;script&gt;alert(&#39;security&#39;);&lt;/script&gt;<b>test</b></p>",
+			allowedTags: config.Slice{"p", "b"},
 		},
 	}
 

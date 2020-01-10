@@ -5,8 +5,9 @@ import (
 	"strings"
 
 	"flamingo.me/flamingo/v3/framework/config"
-	"flamingo.me/pugtemplate/pugjs"
 	"golang.org/x/net/html"
+
+	"flamingo.me/pugtemplate/pugjs"
 )
 
 type (
@@ -89,7 +90,12 @@ func cleanTags(n *html.Node, allowedTags allowedTags) string {
 	}
 
 	if n.Type == html.TextNode {
-		res += n.Data
+		// We assume the body of a text node is valid fully escaped.
+		//
+		// In case a pre-escaped input arrives here, it would have been unescaped
+		// by html.Parse and would end up here as unrecognized HTML tags.
+		// Escaping mitigates unwanted HTML (like script).
+		res += html.EscapeString(n.Data)
 	}
 
 	if n.FirstChild != nil {
