@@ -76,6 +76,12 @@ func TestStriptagsFunc(t *testing.T) {
 			allowedTags: config.Slice{"p"},
 		},
 		{
+			name:        "should not filter script tag",
+			in:          "<script>alert('security!');</script>",
+			out:         "<script>alert(&#39;security!&#39;);</script>",
+			allowedTags: config.Slice{"p", "script"},
+		},
+		{
 			name:        "should filter script tag with escaped input",
 			in:          "<p>&lt;script&gt;alert('security');&lt;/script&gt;</p>",
 			out:         "<p>&lt;script&gt;alert(&#39;security&#39;);&lt;/script&gt;</p>",
