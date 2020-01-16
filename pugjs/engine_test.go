@@ -28,6 +28,18 @@ func TestNewEngine_ratelimitFromConfig(t *testing.T) {
 
 	engine, ok := injector.GetInstance(pugjs.Engine{}).(*pugjs.Engine)
 	if assert.True(t, ok) {
-		assert.Equal(t, float64(42), engine.Ratelimit)
+		assert.Equal(t, 42, engine.GetRateLimit())
 	}
+}
+
+func TestNewEngineWithOptions(t *testing.T) {
+	t.Run("WithRateLimit", func(t *testing.T) {
+		engine := pugjs.NewEngineWithOptions(pugjs.WithRateLimit(42))
+		assert.Equal(t, 42, engine.GetRateLimit())
+	})
+
+	t.Run("WithRateLimit set to invalid zero is ignored", func(t *testing.T) {
+		engine := pugjs.NewEngineWithOptions(pugjs.WithRateLimit(0))
+		assert.Equal(t, 0, engine.GetRateLimit())
+	})
 }

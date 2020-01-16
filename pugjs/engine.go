@@ -62,9 +62,11 @@ type (
 		EventRouter     flamingo.EventRouter `inject:""`
 		FuncProvider    templateFuncProvider `inject:""`
 		Logger          flamingo.Logger      `inject:""`
-		Ratelimit       float64              `inject:"config:pug_template.ratelimit"`
 		ratelimit       chan struct{}
 	}
+
+	// EngineOption options to configure the Engine
+	EngineOption func(e *Engine)
 
 	// EventSubscriber is the event subscriber for Engine
 	EventSubscriber struct {
@@ -99,12 +101,28 @@ func NewEngine(debugsetup *struct {
 		setLoggerInfos(debugsetup.Logger, debugsetup.Debug)
 	}
 
-	return &Engine{
+	return NewEngineWithOptions(WithRateLimit(8))
+}
+
+// WithRateLimit configures the rate limit. The value must be greater zero, otherwise the option will be ignored.
+func WithRateLimit(rateLimit int) EngineOption {
+	if rateLimit <= 0 {
+		return nil
+	}
+
+	return func(e *Engine) {
+		e.ratelimit = make(chan struct{}, rateLimit)
+	}
+}
+
+func NewEngineWithOptions(opt ...EngineOption) *Engine {
+	engine := &Engine{
 		RWMutex:      new(sync.RWMutex),
 		TemplateCode: make(map[string]string),
-		ratelimit:    make(chan struct{}, 8),
-		Ratelimit:    8,
 	}
+
+	engine.applyOptions(opt...)
+	return engine
 }
 
 func newRenderState(path string, debug bool, eventRouter flamingo.EventRouter, logger flamingo.Logger) *renderState {
@@ -132,14 +150,30 @@ func (e *EventSubscriber) Notify(_ context.Context, event flamingo.Event) {
 	}
 }
 
+// Inject injects dependencies
+func (e *Engine) Inject(cfg *struct {
+	RateLimit float64 `inject:"config:pug_template.ratelimit"`
+}) {
+	e.applyOptions(WithRateLimit(int(cfg.RateLimit)))
+}
+
+func (e *Engine) applyOptions(opt ...EngineOption) {
+	for _, option := range opt {
+		if option != nil {
+			option(e)
+		}
+	}
+}
+
+// GetRateLimit returns the rate limit; zero means rate limit is not activated
+func (e *Engine) GetRateLimit() int {
+	return cap(e.ratelimit)
+}
+
 // LoadTemplates with an optional filter
 func (e *Engine) LoadTemplates(filtername string) error {
 	e.Lock()
 	defer e.Unlock()
-
-	if e.Ratelimit > 0 {
-		e.ratelimit = make(chan struct{}, int(e.Ratelimit))
-	}
 
 	if !atomic.CompareAndSwapInt32(&e.templatesLoaded, 0, 1) && filtername == "" {
 		return errors.New("Can not preload all templates again")
@@ -253,7 +287,7 @@ func (e *Engine) Render(ctx context.Context, templateName string, data interface
 	span.Annotate(nil, templateName)
 
 	// block if buffered channel size is reached
-	if e.Ratelimit > 0 {
+	if cap(e.ratelimit) > 0 {
 		e.ratelimit <- struct{}{}
 		defer func() {
 			// release one entry from channel (will release one block)
