@@ -82,7 +82,7 @@ const (
 
 var (
 	rt                    = stats.Int64("flamingo/pugtemplate/render", "pugtemplate render times", stats.UnitMilliseconds)
-	statRateLimitWaitTime = stats.Int64("flamingo/pugtemplate/ratelimit/waittime", "pugtemplate waiting time due to rate limit", stats.UnitMilliseconds)
+	statRateLimitWaitTime = stats.Float64("flamingo/pugtemplate/ratelimit/waittime", "pugtemplate waiting time due to rate limit", stats.UnitMilliseconds)
 	templateKey, _        = tag.NewKey("template")
 
 	debugMode      = false
@@ -91,7 +91,7 @@ var (
 
 func init() {
 	_ = opencensus.View("flamingo/pugtemplate/render", rt, view.Distribution(50, 100, 250, 500, 1000, 2000), templateKey)
-	_ = opencensus.View("flamingo/pugtemplate/ratelimit/waittime", statRateLimitWaitTime, view.Distribution(50, 100, 250, 500, 1000, 2000), templateKey)
+	_ = opencensus.View("flamingo/pugtemplate/ratelimit/waittime", statRateLimitWaitTime, view.Distribution(0.0001, 0.001, 0.01, 0.1, 1, 10, 100, 1000, 10000), templateKey)
 }
 
 // NewEngine constructor
@@ -297,7 +297,10 @@ func (e *Engine) Render(ctx context.Context, templateName string, data interface
 		e.ratelimit <- struct{}{}
 
 		ctx, _ = tag.New(ctx, tag.Upsert(templateKey, templateName))
-		stats.Record(ctx, statRateLimitWaitTime.M(time.Since(start).Nanoseconds()/1000000))
+		waited := float64(time.Since(start).Nanoseconds() / 1000000.0)
+		stats.Record(ctx, statRateLimitWaitTime.M(waited))
+
+		e.Logger.Debugf("template %s waited %fmsec", templateName, waited)
 		defer func() {
 			// release one entry from channel (will release one block)
 			<-e.ratelimit
