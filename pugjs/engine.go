@@ -295,7 +295,9 @@ func (e *Engine) Render(ctx context.Context, templateName string, data interface
 	if cap(e.ratelimit) > 0 {
 		start := time.Now()
 		e.ratelimit <- struct{}{}
-		statRateLimitWaitTime.M(time.Until(start).Nanoseconds() / 1000000)
+
+		ctx, _ = tag.New(ctx, tag.Upsert(templateKey, templateName))
+		stats.Record(ctx, statRateLimitWaitTime.M(time.Until(start).Nanoseconds()/1000000))
 		defer func() {
 			// release one entry from channel (will release one block)
 			<-e.ratelimit
