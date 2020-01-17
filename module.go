@@ -147,7 +147,7 @@ func templatecheckCmd() *cobra.Command {
 	return &cobra.Command{
 		Use:   "templatecheck",
 		Short: "run opinionated checks in frontend/src: Checks atomic design system dependencies (PUG) and js dependencies conventions",
-		//Aliases: []string{"pugcheck"},
+		// Aliases: []string{"pugcheck"},
 		Run: AnalyseCommand(),
 	}
 }
@@ -216,7 +216,7 @@ func (m *Module) DefaultConfig() config.Map {
 		"pug_template.basedir":                          "frontend/dist",
 		"pug_template.debug":                            true,
 		"pug_template.cors_whitelist":                   config.Slice{"http://localhost:3210"},
-		"pug_template.ratelimit":               float64(8),
+		"pug_template.ratelimit":                        float64(8),
 		"imageservice.base_url":                         "-",
 		"imageservice.secret":                           "-",
 		"flamingo.opencensus.tracing.sampler.blacklist": config.Slice{"/static", "/assets"},
