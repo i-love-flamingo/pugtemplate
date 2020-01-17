@@ -104,10 +104,12 @@ func NewEngine(debugsetup *struct {
 	return NewEngineWithOptions(WithRateLimit(8))
 }
 
-// WithRateLimit configures the rate limit. The value must be greater zero, otherwise the option will be ignored.
+// WithRateLimit configures the rate limit. A value of zero, disables the rate limit.
 func WithRateLimit(rateLimit int) EngineOption {
 	if rateLimit <= 0 {
-		return nil
+		return func(e *Engine) {
+			e.ratelimit = nil
+		}
 	}
 
 	return func(e *Engine) {
