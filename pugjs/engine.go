@@ -117,6 +117,7 @@ func WithRateLimit(rateLimit int) EngineOption {
 	}
 }
 
+// NewEngineWithOptions create a new Engine with options
 func NewEngineWithOptions(opt ...EngineOption) *Engine {
 	engine := &Engine{
 		RWMutex:      new(sync.RWMutex),
