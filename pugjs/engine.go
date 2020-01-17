@@ -81,15 +81,17 @@ const (
 )
 
 var (
-	rt             = stats.Int64("flamingo/pugtemplate/render", "pugtemplate render times", stats.UnitMilliseconds)
-	templateKey, _ = tag.NewKey("template")
+	rt                    = stats.Int64("flamingo/pugtemplate/render", "pugtemplate render times", stats.UnitMilliseconds)
+	statRateLimitWaitTime = stats.Int64("flamingo/pugtemplate/ratelimit/waittime", "pugtemplate waiting time due to rate limit", stats.UnitMilliseconds)
+	templateKey, _        = tag.NewKey("template")
 
 	debugMode      = false
 	loggerInstance flamingo.Logger
 )
 
 func init() {
-	opencensus.View("flamingo/pugtemplate/render", rt, view.Distribution(50, 100, 250, 500, 1000, 2000), templateKey)
+	_ = opencensus.View("flamingo/pugtemplate/render", rt, view.Distribution(50, 100, 250, 500, 1000, 2000), templateKey)
+	_ = opencensus.View("flamingo/pugtemplate/ratelimit/waittime", statRateLimitWaitTime, view.Distribution(50, 100, 250, 500, 1000, 2000), templateKey)
 }
 
 // NewEngine constructor
@@ -291,7 +293,9 @@ func (e *Engine) Render(ctx context.Context, templateName string, data interface
 
 	// block if buffered channel size is reached
 	if cap(e.ratelimit) > 0 {
+		start := time.Now()
 		e.ratelimit <- struct{}{}
+		statRateLimitWaitTime.M(time.Until(start).Nanoseconds() / 1000000)
 		defer func() {
 			// release one entry from channel (will release one block)
 			<-e.ratelimit
@@ -356,7 +360,7 @@ func (e *Engine) Render(ctx context.Context, templateName string, data interface
 	return result, nil
 }
 
-//setLoggerInfos - used to set the package variables used in the panicOrError method
+// setLoggerInfos - used to set the package variables used in the panicOrError method
 func setLoggerInfos(logger flamingo.Logger, d bool) {
 	if logger == nil {
 		return
