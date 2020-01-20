@@ -94,6 +94,20 @@ func init() {
 	_ = opencensus.View("flamingo/pugtemplate/ratelimit/waittime", statRateLimitWaitTime, view.Distribution(0.0001, 0.001, 0.01, 0.1, 1, 10, 100, 1000, 10000), templateKey)
 }
 
+// Inject injects the EventSubscibers dependencies
+func (e *EventSubscriber) Inject(engine *Engine, logger flamingo.Logger) {
+	e.engine = engine
+	e.logger = logger
+}
+
+// Notify the event subscriper
+func (e *EventSubscriber) Notify(_ context.Context, event flamingo.Event) {
+	if _, ok := event.(*flamingo.StartupEvent); ok {
+		e.logger.Info("preloading templates on flamingo.AppStartupEvent")
+		go e.engine.LoadTemplates("")
+	}
+}
+
 // NewEngine constructor
 func NewEngine(debugsetup *struct {
 	Debug  bool            `inject:"config:debug.mode"`
@@ -103,6 +117,9 @@ func NewEngine(debugsetup *struct {
 		setLoggerInfos(debugsetup.Logger, debugsetup.Debug)
 	}
 
+	// For backward-compatibility we set the rate limit to "8" here.
+	// Also mind Engine's Inject method which also configures the instance,
+	// but happens there also for call-side comparability.
 	return NewEngineWithOptions(WithRateLimit(8))
 }
 
@@ -130,35 +147,11 @@ func NewEngineWithOptions(opt ...EngineOption) *Engine {
 	return engine
 }
 
-func newRenderState(path string, debug bool, eventRouter flamingo.EventRouter, logger flamingo.Logger) *renderState {
-	return &renderState{
-		path:        path,
-		mixin:       make(map[string]string),
-		mixincalls:  make(map[string]struct{}),
-		debug:       debug,
-		eventRouter: eventRouter,
-		logger:      logger,
-	}
-}
-
-// Inject injects the EventSubscibers dependencies
-func (e *EventSubscriber) Inject(engine *Engine, logger flamingo.Logger) {
-	e.engine = engine
-	e.logger = logger
-}
-
-// Notify the event subscriper
-func (e *EventSubscriber) Notify(_ context.Context, event flamingo.Event) {
-	if _, ok := event.(*flamingo.StartupEvent); ok {
-		e.logger.Info("preloading templates on flamingo.AppStartupEvent")
-		go e.engine.LoadTemplates("")
-	}
-}
-
 // Inject injects dependencies
 func (e *Engine) Inject(cfg *struct {
 	RateLimit float64 `inject:"config:pug_template.ratelimit"`
 }) {
+	// Also mind NewEngine regarding instance configuration
 	e.applyOptions(WithRateLimit(int(cfg.RateLimit)))
 }
 
@@ -167,6 +160,17 @@ func (e *Engine) applyOptions(opt ...EngineOption) {
 		if option != nil {
 			option(e)
 		}
+	}
+}
+
+func newRenderState(path string, debug bool, eventRouter flamingo.EventRouter, logger flamingo.Logger) *renderState {
+	return &renderState{
+		path:        path,
+		mixin:       make(map[string]string),
+		mixincalls:  make(map[string]struct{}),
+		debug:       debug,
+		eventRouter: eventRouter,
+		logger:      logger,
 	}
 }
 
