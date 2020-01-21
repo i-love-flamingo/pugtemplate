@@ -14,10 +14,11 @@ import (
 	"flamingo.me/flamingo/v3/framework/config"
 	"flamingo.me/flamingo/v3/framework/flamingo"
 	"flamingo.me/flamingo/v3/framework/web"
+	"github.com/spf13/cobra"
+
 	"flamingo.me/pugtemplate/puganalyse"
 	"flamingo.me/pugtemplate/pugjs"
 	"flamingo.me/pugtemplate/templatefunctions"
-	"github.com/spf13/cobra"
 )
 
 type (
@@ -38,6 +39,19 @@ type (
 		fs http.FileSystem
 	}
 )
+
+// CueConfig for this module
+func (m *Module) CueConfig() string {
+	return `
+pug_template: {
+	trace?: bool
+	ratelimit: float
+	debug: bool
+	basedir: string
+	cors_whitelist: [...string]
+}
+`
+}
 
 // Open - opens a given pass and returns a file
 func (afs assetFileSystem) Open(path string) (http.File, error) {
@@ -147,7 +161,7 @@ func templatecheckCmd() *cobra.Command {
 	return &cobra.Command{
 		Use:   "templatecheck",
 		Short: "run opinionated checks in frontend/src: Checks atomic design system dependencies (PUG) and js dependencies conventions",
-		//Aliases: []string{"pugcheck"},
+		// Aliases: []string{"pugcheck"},
 		Run: AnalyseCommand(),
 	}
 }
@@ -216,6 +230,7 @@ func (m *Module) DefaultConfig() config.Map {
 		"pug_template.basedir":                          "frontend/dist",
 		"pug_template.debug":                            true,
 		"pug_template.cors_whitelist":                   config.Slice{"http://localhost:3210"},
+		"pug_template.ratelimit":                        float64(8),
 		"imageservice.base_url":                         "-",
 		"imageservice.secret":                           "-",
 		"flamingo.opencensus.tracing.sampler.blacklist": config.Slice{"/static", "/assets"},

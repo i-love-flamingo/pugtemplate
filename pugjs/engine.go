@@ -62,7 +62,11 @@ type (
 		EventRouter     flamingo.EventRouter `inject:""`
 		FuncProvider    templateFuncProvider `inject:""`
 		Logger          flamingo.Logger      `inject:""`
+		ratelimit       chan struct{}
 	}
+
+	// EngineOption options to configure the Engine
+	EngineOption func(e *Engine)
 
 	// EventSubscriber is the event subscriber for Engine
 	EventSubscriber struct {
@@ -77,41 +81,17 @@ const (
 )
 
 var (
-	rt             = stats.Int64("flamingo/pugtemplate/render", "pugtemplate render times", stats.UnitMilliseconds)
-	templateKey, _ = tag.NewKey("template")
+	rt                    = stats.Int64("flamingo/pugtemplate/render", "pugtemplate render times", stats.UnitMilliseconds)
+	statRateLimitWaitTime = stats.Float64("flamingo/pugtemplate/ratelimit/waittime", "pugtemplate waiting time due to rate limit", stats.UnitMilliseconds)
+	templateKey, _        = tag.NewKey("template")
 
 	debugMode      = false
 	loggerInstance flamingo.Logger
 )
 
 func init() {
-	opencensus.View("flamingo/pugtemplate/render", rt, view.Distribution(50, 100, 250, 500, 1000, 2000), templateKey)
-}
-
-// NewEngine constructor
-func NewEngine(debugsetup *struct {
-	Debug  bool            `inject:"config:debug.mode"`
-	Logger flamingo.Logger `inject:""`
-}) *Engine {
-	if debugsetup != nil {
-		setLoggerInfos(debugsetup.Logger, debugsetup.Debug)
-	}
-
-	return &Engine{
-		RWMutex:      new(sync.RWMutex),
-		TemplateCode: make(map[string]string),
-	}
-}
-
-func newRenderState(path string, debug bool, eventRouter flamingo.EventRouter, logger flamingo.Logger) *renderState {
-	return &renderState{
-		path:        path,
-		mixin:       make(map[string]string),
-		mixincalls:  make(map[string]struct{}),
-		debug:       debug,
-		eventRouter: eventRouter,
-		logger:      logger,
-	}
+	_ = opencensus.View("flamingo/pugtemplate/render", rt, view.Distribution(50, 100, 250, 500, 1000, 2000), templateKey)
+	_ = opencensus.View("flamingo/pugtemplate/ratelimit/waittime", statRateLimitWaitTime, view.Distribution(0.0001, 0.001, 0.01, 0.1, 1, 10, 100, 1000, 10000), templateKey)
 }
 
 // Inject injects the EventSubscibers dependencies
@@ -126,6 +106,77 @@ func (e *EventSubscriber) Notify(_ context.Context, event flamingo.Event) {
 		e.logger.Info("preloading templates on flamingo.AppStartupEvent")
 		go e.engine.LoadTemplates("")
 	}
+}
+
+// NewEngine constructor
+func NewEngine(debugsetup *struct {
+	Debug  bool            `inject:"config:debug.mode"`
+	Logger flamingo.Logger `inject:""`
+}) *Engine {
+	if debugsetup != nil {
+		setLoggerInfos(debugsetup.Logger, debugsetup.Debug)
+	}
+
+	// For backward-compatibility we set the rate limit to "8" here.
+	// Also mind Engine's Inject method which also configures the instance,
+	// but happens there also for call-side comparability.
+	return NewEngineWithOptions(WithRateLimit(8))
+}
+
+// WithRateLimit configures the rate limit. A value of zero, disables the rate limit.
+func WithRateLimit(rateLimit int) EngineOption {
+	if rateLimit <= 0 {
+		return func(e *Engine) {
+			e.ratelimit = nil
+		}
+	}
+
+	return func(e *Engine) {
+		e.ratelimit = make(chan struct{}, rateLimit)
+	}
+}
+
+// NewEngineWithOptions create a new Engine with options
+func NewEngineWithOptions(opt ...EngineOption) *Engine {
+	engine := &Engine{
+		RWMutex:      new(sync.RWMutex),
+		TemplateCode: make(map[string]string),
+	}
+
+	engine.applyOptions(opt...)
+	return engine
+}
+
+// Inject injects dependencies
+func (e *Engine) Inject(cfg *struct {
+	RateLimit float64 `inject:"config:pug_template.ratelimit"`
+}) {
+	// Also mind NewEngine regarding instance configuration
+	e.applyOptions(WithRateLimit(int(cfg.RateLimit)))
+}
+
+func (e *Engine) applyOptions(opt ...EngineOption) {
+	for _, option := range opt {
+		if option != nil {
+			option(e)
+		}
+	}
+}
+
+func newRenderState(path string, debug bool, eventRouter flamingo.EventRouter, logger flamingo.Logger) *renderState {
+	return &renderState{
+		path:        path,
+		mixin:       make(map[string]string),
+		mixincalls:  make(map[string]struct{}),
+		debug:       debug,
+		eventRouter: eventRouter,
+		logger:      logger,
+	}
+}
+
+// GetRateLimit returns the rate limit; zero means rate limit is not activated
+func (e *Engine) GetRateLimit() int {
+	return cap(e.ratelimit)
 }
 
 // LoadTemplates with an optional filter
@@ -218,8 +269,6 @@ func (e *Engine) compileDir(root, dirname, filtername string) (map[string]*Templ
 	return result, nil
 }
 
-var renderChan = make(chan struct{}, 8)
-
 var _ flamingo.TemplateEngine = new(Engine)
 var _ flamingo.PartialTemplateEngine = new(Engine)
 
@@ -247,11 +296,20 @@ func (e *Engine) Render(ctx context.Context, templateName string, data interface
 	span.Annotate(nil, templateName)
 
 	// block if buffered channel size is reached
-	renderChan <- struct{}{}
-	defer func() {
-		// release one entry from channel (will release one block)
-		<-renderChan
-	}()
+	if cap(e.ratelimit) > 0 {
+		start := time.Now()
+		e.ratelimit <- struct{}{}
+
+		ctx, _ = tag.New(ctx, tag.Upsert(templateKey, templateName))
+		waited := float64(time.Since(start).Nanoseconds() / 1000000.0)
+		stats.Record(ctx, statRateLimitWaitTime.M(waited))
+
+		e.Logger.Debugf("template %s waited %fmsec", templateName, waited)
+		defer func() {
+			// release one entry from channel (will release one block)
+			<-e.ratelimit
+		}()
+	}
 
 	p := strings.Split(templateName, "/")
 	for i, v := range p {
@@ -311,7 +369,7 @@ func (e *Engine) Render(ctx context.Context, templateName string, data interface
 	return result, nil
 }
 
-//setLoggerInfos - used to set the package variables used in the panicOrError method
+// setLoggerInfos - used to set the package variables used in the panicOrError method
 func setLoggerInfos(logger flamingo.Logger, d bool) {
 	if logger == nil {
 		return
