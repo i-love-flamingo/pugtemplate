@@ -1,0 +1,40 @@
+// expected: <div></div>
+- var classVariable = false
+.className(class=classVariable)
+
+// should not happen!
+// expected: <div class="className">
+- var classVariable = true
+.className(class=classVariable)
+
+// expected: <div></div>
+- var classVariable = null
+.className(class=classVariable)
+
+// expected: <div></div>
+- var classVariable = false
+div(class=classVariable)
+
+// expected: <div></div>
+- var someAttr = false
+div(title=someAttr)
+
+// expected: <div title="title"></div>
+- var someAttr = true
+div(title=someAttr)
+
+// expected: <div></div>
+- var someAttr = null
+div(title=someAttr)
+
+// expected: <div></div>
+- var someAttr = null
+.className(id=someAttr)
+
+// expected: <div></div>
+- var someAttr = false
+.className(id=someAttr)
+
+// expected: <div></div>
+- var someAttr = true
+.className(id=someAttr)

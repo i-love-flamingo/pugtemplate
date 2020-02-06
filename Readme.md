@@ -2,6 +2,29 @@
 
 [![Go Report Card](https://goreportcard.com/badge/github.com/i-love-flamingo/pugtemplate)](https://goreportcard.com/report/github.com/i-love-flamingo/pugtemplate) [![GoDoc](https://godoc.org/github.com/i-love-flamingo/pugtemplate?status.svg)](https://godoc.org/github.com/i-love-flamingo/pugtemplate) [![Build Status](https://travis-ci.org/i-love-flamingo/pugtemplate.svg)](https://travis-ci.org/i-love-flamingo/pugtemplate)
 
+## Get Started
+
+In your Flamingo project, run:
+```bash
+mkdir frontend
+cd frontend
+npm init
+npm i flamingo-carotene-core
+npm i flamingo-carotene-pug
+mkdir -p src/page
+echo "h1 hello world" > src/page/index.pug 
+npx flamingo-carotene build
+```
+
+Add the index route in `config/routes.yml`:
+```yaml
+- path: /
+  name: home
+  controller: flamingo.render(tpl="index")
+```
+
+See the folder `example` for this example.
+
 ## Pug js
 
 [Pug](https://pugjs.org/api/getting-started.html) is a JavaScript template rendering engine.

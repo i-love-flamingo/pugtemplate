@@ -153,10 +153,10 @@ var funcmap = FuncMap{
 		if v, ok := v.(bool); ok {
 			return []Attribute{{Name: k, BoolVal: &v}}
 		}
-		// if _, ok := v.(Nil); ok {
-		// 	b := false
-		// 	return []Attribute{{Name: k, BoolVal: &b}}
-		// }
+		if _, ok := v.(Nil); ok {
+			b := false
+			return []Attribute{{Name: k, BoolVal: &b}}
+		}
 		if v, ok := v.(Object); ok {
 			return []Attribute{{Name: k, Val: JavaScriptExpression(v.String()), MustEscape: e}}
 		}
@@ -223,6 +223,9 @@ var funcmap = FuncMap{
 			var tmp string
 			for _, val := range a[attr] {
 				if val.bool != nil && !*val.bool {
+					if attr == "class" {
+						continue
+					}
 					continue renderloop
 				}
 				if len(tmp) > 0 {
@@ -234,7 +237,11 @@ var funcmap = FuncMap{
 					tmp += val.val[1 : len(val.val)-1]
 				}
 			}
-			res += ` ` + attr + `="` + strings.TrimSpace(tmp) + `"`
+			tmp = strings.TrimSpace(tmp)
+			if tmp == "" && attr == "class" {
+				continue renderloop
+			}
+			res += ` ` + attr + `="` + tmp + `"`
 		}
 		return
 	},
