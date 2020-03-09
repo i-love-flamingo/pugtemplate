@@ -22,6 +22,7 @@ type (
 func (af *AssetFunc) Func(ctx context.Context) interface{} {
 	return func(asset pugjs.String) template.URL {
 		// let webpack dev server handle URL's
+		// deprecated
 		if af.Engine.Webpackserver {
 			return template.URL("/assets/" + asset)
 		}

@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"io"
 	"log"
 	"net/http"
 	"os"
@@ -84,12 +83,7 @@ func assetHandler(whitelisted []string) http.Handler {
 			rw.Header().Add("Access-Control-Allow-Origin", origin)
 		}
 
-		if r, e := http.Get("http://localhost:1337" + req.RequestURI); e == nil {
-			copyHeaders(r, rw)
-			io.Copy(rw, r.Body)
-		} else {
-			http.FileServer(assetFileSystem{http.Dir("frontend/dist/")}).ServeHTTP(rw, req)
-		}
+		http.FileServer(assetFileSystem{http.Dir("frontend/dist/")}).ServeHTTP(rw, req)
 	})
 }
 
