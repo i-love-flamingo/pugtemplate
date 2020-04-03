@@ -16,9 +16,10 @@ import (
 func TestNewEngine_ratelimitFromConfig(t *testing.T) {
 	cfg := config.Module{
 		Map: config.Map{
-			"pug_template.ratelimit": float64(42),
-			"pug_template.basedir":   "",
-			"debug.mode":             false,
+			"pug_template.ratelimit":          float64(42),
+			"pug_template.basedir":            "",
+			"debug.mode":                      false,
+			"pug_template.check_webpack_1337": false,
 		},
 	}
 

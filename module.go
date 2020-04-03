@@ -240,6 +240,7 @@ func (m *Module) DefaultConfig() config.Map {
 		"imageservice.base_url":                         "-",
 		"imageservice.secret":                           "-",
 		"flamingo.opencensus.tracing.sampler.blacklist": config.Slice{"/static", "/assets"},
+		"pug_template.check_webpack_1337":               false,
 	}
 }
 
