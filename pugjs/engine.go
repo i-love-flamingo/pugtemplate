@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"net/http"
 	"os"
 	"path"
 	"strings"
@@ -59,11 +60,12 @@ type (
 		TemplateCode    map[string]string
 		// Webpackserver flag
 		// Deprecated: not used anymore
-		Webpackserver bool
-		EventRouter   flamingo.EventRouter `inject:""`
-		FuncProvider  templateFuncProvider `inject:""`
-		Logger        flamingo.Logger      `inject:""`
-		ratelimit     chan struct{}
+		Webpackserver    bool
+		EventRouter      flamingo.EventRouter `inject:""`
+		FuncProvider     templateFuncProvider `inject:""`
+		Logger           flamingo.Logger      `inject:""`
+		ratelimit        chan struct{}
+		CheckWebpack1337 bool `inject:"config:pug_template.check_webpack_1337"`
 	}
 
 	// EngineOption options to configure the Engine
@@ -203,6 +205,11 @@ func (e *Engine) LoadTemplates(filtername string) error {
 	}
 
 	e.Webpackserver = false
+	if e.CheckWebpack1337 {
+		if _, err := http.Get("http://localhost:1337/assets/js/vendor.js"); err == nil {
+			e.Webpackserver = true
+		}
+	}
 
 	e.Logger.Info("Compiled templates in", time.Since(start))
 	return nil

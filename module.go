@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
 	"os"
@@ -23,15 +24,17 @@ import (
 type (
 	// Module for framework/pug_template
 	Module struct {
-		DefaultMux *http.ServeMux `inject:",optional"`
-		Basedir    string         `inject:"config:pug_template.basedir"`
-		Whitelist  config.Slice   `inject:"config:pug_template.cors_whitelist"`
+		DefaultMux       *http.ServeMux `inject:",optional"`
+		Basedir          string         `inject:"config:pug_template.basedir"`
+		Whitelist        config.Slice   `inject:"config:pug_template.cors_whitelist"`
+		CheckWebpack1337 bool           `inject:"config:pug_template.check_webpack_1337"`
 	}
 
 	routes struct {
-		controller *DebugController
-		Basedir    string       `inject:"config:pug_template.basedir"`
-		Whitelist  config.Slice `inject:"config:pug_template.cors_whitelist"`
+		controller       *DebugController
+		Basedir          string       `inject:"config:pug_template.basedir"`
+		Whitelist        config.Slice `inject:"config:pug_template.cors_whitelist"`
+		CheckWebpack1337 bool         `inject:"config:pug_template.check_webpack_1337"`
 	}
 
 	assetFileSystem struct {
@@ -48,6 +51,7 @@ pug_template: {
 	debug: bool
 	basedir: string
 	cors_whitelist: [...string]
+	check_webpack_1337: bool | *false
 }
 `
 }
@@ -74,13 +78,21 @@ func (r *routes) Inject(controller *DebugController) {
 	r.controller = controller
 }
 
-func assetHandler(whitelisted []string) http.Handler {
+func assetHandler(whitelisted []string, check1337 bool) http.Handler {
 	whitelist := "!" + strings.Join(whitelisted, "!") + "!"
 
 	return http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		origin := req.Header.Get("Origin")
 		if strings.Contains(whitelist, "!"+origin+"!") || strings.Contains(whitelist, "!*!") {
 			rw.Header().Add("Access-Control-Allow-Origin", origin)
+		}
+
+		if check1337 {
+			if r, e := http.Get("http://localhost:1337" + req.RequestURI); e == nil {
+				copyHeaders(r, rw)
+				io.Copy(rw, r.Body)
+				return
+			}
 		}
 
 		http.FileServer(assetFileSystem{http.Dir("frontend/dist/")}).ServeHTTP(rw, req)
@@ -98,7 +110,7 @@ func (r *routes) Routes(registry *web.RouterRegistry) {
 	registry.Route("/_pugtpl/debug", "pugtpl.debug")
 	registry.HandleGet("pugtpl.debug", r.controller.Get)
 
-	registry.HandleAny("_static", web.WrapHTTPHandler(http.StripPrefix("/static/", assetHandler(whitelist))))
+	registry.HandleAny("_static", web.WrapHTTPHandler(http.StripPrefix("/static/", assetHandler(whitelist, r.CheckWebpack1337))))
 	registry.Route("/static/*n", "_static")
 
 	registry.HandleData("page.template", func(ctx context.Context, _ *web.Request, _ web.RequestParams) interface{} {
@@ -106,7 +118,7 @@ func (r *routes) Routes(registry *web.RouterRegistry) {
 	})
 
 	registry.Route("/assets/*f", "_pugtemplate.assets")
-	registry.HandleAny("_pugtemplate.assets", web.WrapHTTPHandler(assetHandler(whitelist)))
+	registry.HandleAny("_pugtemplate.assets", web.WrapHTTPHandler(assetHandler(whitelist, r.CheckWebpack1337)))
 }
 
 // Configure DI
@@ -124,7 +136,7 @@ func (m *Module) Configure(injector *dingo.Injector) {
 		var whitelist []string
 		m.Whitelist.MapInto(&whitelist)
 
-		m.DefaultMux.Handle("/assets/", assetHandler(whitelist))
+		m.DefaultMux.Handle("/assets/", assetHandler(whitelist, m.CheckWebpack1337))
 	}
 
 	injector.BindMap((*flamingo.TemplateFunc)(nil), "Math").To(templatefunctions.JsMath{})
@@ -228,6 +240,7 @@ func (m *Module) DefaultConfig() config.Map {
 		"imageservice.base_url":                         "-",
 		"imageservice.secret":                           "-",
 		"flamingo.opencensus.tracing.sampler.blacklist": config.Slice{"/static", "/assets"},
+		"pug_template.check_webpack_1337":               false,
 	}
 }
 
