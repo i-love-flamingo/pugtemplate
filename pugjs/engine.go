@@ -302,7 +302,12 @@ func (e *Engine) Render(ctx context.Context, templateName string, data interface
 	// block if buffered channel size is reached
 	if cap(e.ratelimit) > 0 {
 		start := time.Now()
-		e.ratelimit <- struct{}{}
+		select {
+		case <-ctx.Done():
+			e.Logger.Debugf("template %s wait failed: %s", templateName, ctx.Err().Error())
+			return nil, fmt.Errorf("template %s wait failed: %w", templateName, ctx.Err())
+		case e.ratelimit <- struct{}{}:
+		}
 
 		ctx, _ = tag.New(ctx, tag.Upsert(templateKey, templateName))
 		waited := float64(time.Since(start).Nanoseconds() / 1000000.0)
