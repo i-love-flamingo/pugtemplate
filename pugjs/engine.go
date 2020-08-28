@@ -52,7 +52,7 @@ type (
 	Engine struct {
 		*sync.RWMutex
 		Basedir         string `inject:"config:pug_template.basedir"`
-		Debug           bool   `inject:"config:debug.mode"`
+		Debug           bool   `inject:"config:core.debug.mode"`
 		Trace           bool   `inject:"config:pug_template.trace,optional"`
 		Assetrewrites   map[string]string
 		templatesLoaded int32
@@ -90,7 +90,7 @@ func init() {
 
 // NewEngine constructor
 func NewEngine(debugsetup *struct {
-	Debug  bool            `inject:"config:debug.mode"`
+	Debug  bool            `inject:"config:core.debug.mode"`
 	Logger flamingo.Logger `inject:""`
 }) *Engine {
 	if debugsetup != nil {
