@@ -15,7 +15,7 @@ type (
 	URLFunc struct {
 		Router    *web.Router     `inject:""`
 		Logger    flamingo.Logger `inject:""`
-		DebugMode bool            `inject:"config:core.debug.mode"`
+		DebugMode bool            `inject:"config:flamingo.debug.mode"`
 	}
 )
 
