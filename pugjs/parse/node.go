@@ -72,6 +72,8 @@ const (
 	NodeTemplate                   // NodeTemplate - A template invocation action.
 	NodeVariable                   // NodeVariable - A $ variable.
 	NodeWith                       // NodeWith - A with action.
+	NodeTry
+	NodeCatch
 )
 
 // Nodes.
@@ -883,4 +885,52 @@ func (t *TemplateNode) tree() *Tree {
 // Copy a node
 func (t *TemplateNode) Copy() Node {
 	return t.tr.newTemplate(t.Pos, t.Line, t.Name, t.Pipe.CopyPipe())
+}
+
+type TryNode struct {
+	NodeType
+	Pos
+	tr        *Tree
+	List      *ListNode
+	Catch     *ListNode
+	Exception string
+}
+
+func (t *Tree) newTry(pos Pos, exception string, list, catch *ListNode) *TryNode {
+	return &TryNode{Pos: pos, tr: t, NodeType: NodeTry, Exception: exception, List: list, Catch: catch}
+}
+
+func (t *TryNode) tree() *Tree {
+	return t.tr
+}
+
+func (t *TryNode) Copy() Node {
+	return t.tr.newTry(t.Pos, t.Exception, t.List, t.Catch)
+}
+
+func (t *TryNode) String() string {
+	return "{{ try }}"
+}
+
+type CatchNode struct {
+	NodeType
+	Pos
+	tr        *Tree
+	Exception string
+}
+
+func (t *Tree) newCatch(pos Pos, exception string) *CatchNode {
+	return &CatchNode{Pos: pos, tr: t, NodeType: NodeCatch, Exception: exception}
+}
+
+func (t *CatchNode) tree() *Tree {
+	return t.tr
+}
+
+func (t *CatchNode) Copy() Node {
+	return t.tr.newCatch(t.Pos, t.Exception)
+}
+
+func (t *CatchNode) String() string {
+	return "{{ catch " + t.Exception + " }}"
 }

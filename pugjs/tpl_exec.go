@@ -274,6 +274,8 @@ func (s *state) walk(dot reflect.Value, node parse.Node) {
 		}
 	case *parse.WithNode:
 		s.walkIfOrWith(parse.NodeWith, dot, node.Pipe, node.List, node.ElseList)
+	case *parse.TryNode:
+		s.walkTry(dot, node)
 	default:
 		s.errorf("unknown node: %s", node)
 	}
@@ -438,6 +440,22 @@ func (s *state) walkRange(dot reflect.Value, r *parse.RangeNode) {
 	if r.ElseList != nil {
 		s.walk(dot, r.ElseList)
 	}
+}
+
+func (s *state) walkTry(dot reflect.Value, r *parse.TryNode) {
+	s.at(r)
+	defer s.pop(s.mark())
+
+	defer func() {
+		if exception := recover(); exception != nil {
+			if r.Exception != "" {
+				s.setVarValue(`$`+r.Exception, reflect.ValueOf(exception))
+			}
+			s.walk(dot, r.Catch)
+		}
+	}()
+
+	s.walk(dot, r.List)
 }
 
 func (s *state) walkTemplate(dot reflect.Value, t *parse.TemplateNode) {

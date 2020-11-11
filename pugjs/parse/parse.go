@@ -334,7 +334,7 @@ func (t *Tree) itemList() (list *ListNode, next Node) {
 	for t.peekNonSpace().typ != itemEOF {
 		n := t.textOrAction()
 		switch n.Type() {
-		case nodeEnd, nodeElse:
+		case nodeEnd, nodeElse, NodeCatch:
 			return list, n
 		}
 		list.append(n)
@@ -378,6 +378,12 @@ func (t *Tree) action() (n Node) {
 		return t.templateControl()
 	case itemWith:
 		return t.withControl()
+	case itemTry:
+		return t.tryControl()
+	case itemCatch:
+		return t.catchControl()
+		//case itemFinally:
+		//t.finallyControl()
 	}
 	t.backup()
 	token := t.peek()
@@ -510,6 +516,33 @@ func (t *Tree) rangeControl() Node {
 func (t *Tree) withControl() Node {
 	return t.newWith(t.parseControl(false, "with"))
 }
+
+func (t *Tree) tryControl() Node {
+	try := t.expect(itemRightDelim, "try")
+	list, next := t.itemList()
+	if next.Type() != NodeCatch {
+		panic("missing catch")
+	}
+	exception := next.(*CatchNode).Exception
+	catch, _ := t.itemList()
+	return t.newTry(try.pos, exception, list, catch)
+}
+
+func (t *Tree) catchControl() Node {
+	catch := t.nextNonSpace()
+
+	var name = ""
+	if catch.typ != itemRightDelim {
+		name = catch.val
+		catch = t.nextNonSpace()
+	}
+
+	return t.newCatch(catch.pos, name)
+}
+
+//func (t *Tree) finallyControl() Node {
+//	return t.newFinally(t.expect(itemRightDelim, "try").pos)
+//}
 
 // End:
 // 	{{end}}

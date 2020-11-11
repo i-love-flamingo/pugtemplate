@@ -69,6 +69,9 @@ const (
 	itemRange    // range keyword
 	itemTemplate // template keyword
 	itemWith     // with keyword
+	itemTry
+	itemCatch
+	itemFinally
 )
 
 var key = map[string]itemType{
@@ -82,6 +85,9 @@ var key = map[string]itemType{
 	"nil":      itemNil,
 	"template": itemTemplate,
 	"with":     itemWith,
+	"try":      itemTry,
+	"catch":    itemCatch,
+	"finally":  itemFinally,
 }
 
 const eof = -1

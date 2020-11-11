@@ -168,6 +168,15 @@ func (p *renderState) renderStatement(stmt ast.Statement, wrap bool, dot bool) s
 	// case *ast.BranchStatement:
 	// 	finalexpr = `{{ if `
 
+	case *ast.TryStatement:
+		finalexpr = `{{ try }}`
+		finalexpr += p.renderStatement(expr.Body, wrap, true)
+		finalexpr += `{{ catch ` + expr.Catch.Parameter.Name + ` }}`
+		finalexpr += p.renderStatement(expr.Catch.Body, wrap, true)
+		// finalexpr += `{{ finally }}`
+		// finalexpr += p.renderStatement(expr.Finally, wrap, true)
+		finalexpr += `{{ end }}`
+
 	// we cannot deal with other expressions at the moment, and we don'e expect them ayway
 	default:
 		fmt.Printf("%#v\n", stmt)
