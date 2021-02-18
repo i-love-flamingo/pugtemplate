@@ -3,6 +3,7 @@ module flamingo.me/pugtemplate
 require (
 	flamingo.me/dingo v0.1.6
 	flamingo.me/flamingo/v3 v3.0.1
+	github.com/fzipp/gocyclo v0.3.1 // indirect
 	github.com/go-test/deep v1.0.1
 	github.com/golang/groupcache v0.0.0-20200121045136-8c9f03a8e57e // indirect
 	github.com/golang/protobuf v1.4.3 // indirect
