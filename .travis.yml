@@ -15,9 +15,9 @@ script:
   - test -z $fmt || (echo "please run gofmt" ; echo $fmt ; exit 1)
   - go run golang.org/x/lint/golint -set_exit_status ./puganalyse ./pugjs ./templatefunctions
   - go test -race -vet=all ./...
-  - go run github.com/fzipp/gocyclo -top 20 ./puganalyse
-  - go run github.com/fzipp/gocyclo -top 20 ./pugjs
-  - go run github.com/fzipp/gocyclo -top 20 ./templatefunctions
+  - go run github.com/fzipp/gocyclo/cmd/gocyclo -top 20 ./puganalyse
+  - go run github.com/fzipp/gocyclo/cmd/gocyclo -top 20 ./pugjs
+  - go run github.com/fzipp/gocyclo/cmd/gocyclo -top 20 ./templatefunctions
   - go run github.com/client9/misspell/cmd/misspell ./puganalyse
   - go run github.com/client9/misspell/cmd/misspell ./pugjs
   - go run github.com/client9/misspell/cmd/misspell ./templatefunctions
