@@ -7,6 +7,7 @@ require (
 	github.com/go-test/deep v1.0.1
 	github.com/golang/groupcache v0.0.0-20200121045136-8c9f03a8e57e // indirect
 	github.com/golang/protobuf v1.4.3 // indirect
+	github.com/gordonklaus/ineffassign v0.0.0-20210209182638-d0e41b2fc8ed // indirect
 	github.com/gorilla/mux v1.7.0 // indirect
 	github.com/pkg/errors v0.8.1
 	github.com/prometheus/client_model v0.2.0 // indirect
