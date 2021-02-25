@@ -887,6 +887,7 @@ func (t *TemplateNode) Copy() Node {
 	return t.tr.newTemplate(t.Pos, t.Line, t.Name, t.Pipe.CopyPipe())
 }
 
+// TryNode represents the {{ try }} node
 type TryNode struct {
 	NodeType
 	Pos
@@ -904,14 +905,17 @@ func (t *TryNode) tree() *Tree {
 	return t.tr
 }
 
+// Copy creates a copy of the node
 func (t *TryNode) Copy() Node {
 	return t.tr.newTry(t.Pos, t.Exception, t.List, t.Catch)
 }
 
+// String returns the string value
 func (t *TryNode) String() string {
 	return "{{ try }}"
 }
 
+// CatchNode represents the {{ catch }} node
 type CatchNode struct {
 	NodeType
 	Pos
@@ -927,10 +931,12 @@ func (t *CatchNode) tree() *Tree {
 	return t.tr
 }
 
+// Copy the node
 func (t *CatchNode) Copy() Node {
 	return t.tr.newCatch(t.Pos, t.Exception)
 }
 
+// String returns string representation
 func (t *CatchNode) String() string {
 	return "{{ catch " + t.Exception + " }}"
 }

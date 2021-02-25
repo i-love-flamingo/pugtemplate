@@ -46,7 +46,7 @@ jobs:
           fmt=$(gofmt -l .)
           test -z $fmt || (echo "please run gofmt" ; echo $fmt ; exit 1)
       - name: Go Lint
-        run: go run golang.org/x/lint/golint -set_exit_status $(go list ./...)
+        run: go run golang.org/x/lint/golint -set_exit_status $(go list ./... | grep -v otto/)
       - name: Spelling
         run: |
           go run github.com/client9/misspell/cmd/misspell -error ./example
