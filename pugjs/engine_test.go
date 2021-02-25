@@ -8,6 +8,7 @@ import (
 	"flamingo.me/flamingo/v3/framework/config"
 	"flamingo.me/flamingo/v3/framework/flamingo"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"flamingo.me/pugtemplate"
 	"flamingo.me/pugtemplate/pugjs"
@@ -23,14 +24,17 @@ func TestNewEngine_ratelimitFromConfig(t *testing.T) {
 		},
 	}
 
-	injector := dingo.NewInjector(&cfg)
+	injector, err := dingo.NewInjector(&cfg)
+	require.NoError(t, err)
 	injector.Bind((*flamingo.Logger)(nil)).To(flamingo.NullLogger{})
-	injector.InitModules(new(pugtemplate.Module), new(framework.InitModule))
+	err = injector.InitModules(new(pugtemplate.Module), new(framework.InitModule))
+	require.NoError(t, err)
 
-	engine, ok := injector.GetInstance(pugjs.Engine{}).(*pugjs.Engine)
-	if assert.True(t, ok) {
-		assert.Equal(t, 42, engine.GetRateLimit())
-	}
+	i, err := injector.GetInstance(pugjs.Engine{})
+	require.NoError(t, err)
+
+	engine := i.(*pugjs.Engine)
+	assert.Equal(t, 42, engine.GetRateLimit())
 }
 
 func TestNewEngineWithOptions(t *testing.T) {
