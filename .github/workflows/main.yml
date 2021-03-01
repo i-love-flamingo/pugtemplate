@@ -1,0 +1,61 @@
+name: Tests
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  run-tests:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        go: [ '1.15', '1.*' ]
+    name: With Go ${{ matrix.go }}
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: ${{ matrix.go }}
+      - name: Get dependencies
+        run: go get -v -t -d ./...
+      - name: Test
+        run: go test -race ./...
+  static-checks:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        go: [ '1.*' ]
+    name: Static checks
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: ${{ matrix.go }}
+      - name: Get dependencies
+        run: go get -v -t -d ./...
+      - name: Go Vet
+        run: go vet ./...
+      - name: Go Fmt
+        run: |
+          fmt=$(gofmt -l .)
+          test -z $fmt || (echo "please run gofmt" ; echo $fmt ; exit 1)
+      - name: Go Lint
+        run: go run golang.org/x/lint/golint -set_exit_status $(go list ./... | grep -v otto/)
+      - name: Spelling
+        run: |
+          go run github.com/client9/misspell/cmd/misspell -error ./example
+          go run github.com/client9/misspell/cmd/misspell -error ./puganalyse
+          go run github.com/client9/misspell/cmd/misspell -error ./pugjs
+          go run github.com/client9/misspell/cmd/misspell -error ./templatefunctions
+      - name: In effective assignments
+        run: |
+          go run github.com/gordonklaus/ineffassign ./example
+          go run github.com/gordonklaus/ineffassign ./puganalyse
+          go run github.com/gordonklaus/ineffassign ./pugjs
+          go run github.com/gordonklaus/ineffassign ./templatefunctions

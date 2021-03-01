@@ -1,6 +1,9 @@
 # Pug Template
 
-[![Go Report Card](https://goreportcard.com/badge/github.com/i-love-flamingo/pugtemplate)](https://goreportcard.com/report/github.com/i-love-flamingo/pugtemplate) [![GoDoc](https://godoc.org/github.com/i-love-flamingo/pugtemplate?status.svg)](https://godoc.org/github.com/i-love-flamingo/pugtemplate) [![Build Status](https://travis-ci.org/i-love-flamingo/pugtemplate.svg)](https://travis-ci.org/i-love-flamingo/pugtemplate)
+[![Go Report Card](https://goreportcard.com/badge/github.com/i-love-flamingo/pugtemplate)](https://goreportcard.com/report/github.com/i-love-flamingo/pugtemplate)
+[![GoDoc](https://godoc.org/github.com/i-love-flamingo/pugtemplate?status.svg)](https://godoc.org/github.com/i-love-flamingo/pugtemplate)
+[![Tests](https://github.com/i-love-flamingo/pugtemplate/workflows/Tests/badge.svg?branch=master)](https://github.com/i-love-flamingo/pugtemplate/actions?query=branch%3Amaster+workflow%3ATests)
+
 
 ## Get Started
 
