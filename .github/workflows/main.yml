@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        go: [ '1.15', '1.*' ]
+        go: [ '1.17', '1.*' ]
     name: With Go ${{ matrix.go }}
     steps:
       - uses: actions/checkout@v2
@@ -46,16 +46,16 @@ jobs:
           fmt=$(gofmt -l .)
           test -z $fmt || (echo "please run gofmt" ; echo $fmt ; exit 1)
       - name: Go Lint
-        run: go run golang.org/x/lint/golint -set_exit_status $(go list ./... | grep -v otto/)
+        run: go run golang.org/x/lint/golint@latest -set_exit_status $(go list ./... | grep -v otto/)
       - name: Spelling
         run: |
-          go run github.com/client9/misspell/cmd/misspell -error ./example
-          go run github.com/client9/misspell/cmd/misspell -error ./puganalyse
-          go run github.com/client9/misspell/cmd/misspell -error ./pugjs
-          go run github.com/client9/misspell/cmd/misspell -error ./templatefunctions
+          go run github.com/client9/misspell/cmd/misspell@latest -error ./example
+          go run github.com/client9/misspell/cmd/misspell@latest -error ./puganalyse
+          go run github.com/client9/misspell/cmd/misspell@latest -error ./pugjs
+          go run github.com/client9/misspell/cmd/misspell@latest -error ./templatefunctions
       - name: In effective assignments
         run: |
-          go run github.com/gordonklaus/ineffassign ./example
-          go run github.com/gordonklaus/ineffassign ./puganalyse
-          go run github.com/gordonklaus/ineffassign ./pugjs
-          go run github.com/gordonklaus/ineffassign ./templatefunctions
+          go run github.com/gordonklaus/ineffassign@latest ./example
+          go run github.com/gordonklaus/ineffassign@latest ./puganalyse
+          go run github.com/gordonklaus/ineffassign@latest ./pugjs
+          go run github.com/gordonklaus/ineffassign@latest ./templatefunctions
