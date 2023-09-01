@@ -9,9 +9,16 @@ type (
 	// It is supposed to be used in a singleton as bound in module.go
 	Startup struct {
 		wg   sync.WaitGroup
-		done bool
+		done chan struct{}
 	}
 )
+
+// Inject dependencies
+func (s *Startup) Inject() *Startup {
+	s.done = make(chan struct{})
+
+	return s
+}
 
 // AddProcess adds and starts a background process concurrently
 func (s *Startup) AddProcess(f func()) {
@@ -24,18 +31,18 @@ func (s *Startup) AddProcess(f func()) {
 
 // Finish finishes up the whole Startup process. Must only be called after all AddProcess have been made
 func (s *Startup) Finish() {
-	var done = make(chan struct{})
 	go func() {
 		s.wg.Wait()
-		close(done)
-	}()
-	go func() {
-		<-done
-		s.done = true
+		close(s.done)
 	}()
 }
 
 // IsFinished indicates if all startup processes have been finished
 func (s *Startup) IsFinished() bool {
-	return s.done
+	select {
+	case <-s.done:
+		return true
+	default:
+		return false
+	}
 }

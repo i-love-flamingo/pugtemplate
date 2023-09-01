@@ -10,7 +10,7 @@ import (
 
 func TestStartup_Finish(t *testing.T) {
 	t.Parallel()
-	s := new(pugjs.Startup)
+	s := new(pugjs.Startup).Inject()
 
 	wait := make(chan struct{})
 
