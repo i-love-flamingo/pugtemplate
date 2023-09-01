@@ -13,7 +13,10 @@ import (
 	"flamingo.me/dingo"
 	"flamingo.me/flamingo/v3/framework/config"
 	"flamingo.me/flamingo/v3/framework/flamingo"
+	"flamingo.me/flamingo/v3/framework/systemendpoint"
+	"flamingo.me/flamingo/v3/framework/systemendpoint/domain"
 	"flamingo.me/flamingo/v3/framework/web"
+	"flamingo.me/pugtemplate/controllers"
 	"github.com/spf13/cobra"
 
 	"flamingo.me/pugtemplate/puganalyse"
@@ -107,17 +110,17 @@ func (r *routes) Routes(registry *web.RouterRegistry) {
 	// trim whitelist of trailing slashes as urls can be configured that way
 	whitelist = trimTrailingSlashes(whitelist)
 
-	registry.Route("/_pugtpl/debug", "pugtpl.debug")
+	registry.MustRoute("/_pugtpl/debug", "pugtpl.debug")
 	registry.HandleGet("pugtpl.debug", r.controller.Get)
 
 	registry.HandleAny("_static", web.WrapHTTPHandler(http.StripPrefix("/static/", assetHandler(whitelist, r.CheckWebpack1337))))
-	registry.Route("/static/*n", "_static")
+	registry.MustRoute("/static/*n", "_static")
 
 	registry.HandleData("page.template", func(ctx context.Context, _ *web.Request, _ web.RequestParams) interface{} {
 		return ctx.Value(pugjs.PageKey)
 	})
 
-	registry.Route("/assets/*f", "_pugtemplate.assets")
+	registry.MustRoute("/assets/*f", "_pugtemplate.assets")
 	registry.HandleAny("_pugtemplate.assets", web.WrapHTTPHandler(assetHandler(whitelist, r.CheckWebpack1337)))
 }
 
@@ -131,6 +134,9 @@ func (m *Module) Configure(injector *dingo.Injector) {
 			return flamingo.TemplateEngine(t)
 		},
 	)
+
+	injector.Bind(new(pugjs.Startup)).In(dingo.Singleton)
+	injector.BindMap((*domain.Handler)(nil), "/pugjs/ready").To(new(controllers.Ready))
 
 	if m.DefaultMux != nil {
 		var whitelist []string
@@ -227,6 +233,13 @@ func AnalyseCommand() func(cmd *cobra.Command, args []string) {
 		if hasError {
 			os.Exit(-1)
 		}
+	}
+}
+
+// Depends on other modules
+func (m *Module) Depends() []dingo.Module {
+	return []dingo.Module{
+		new(systemendpoint.Module),
 	}
 }
 
