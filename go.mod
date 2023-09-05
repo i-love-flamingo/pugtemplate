@@ -1,6 +1,6 @@
 module flamingo.me/pugtemplate
 
-go 1.17
+go 1.20
 
 require (
 	flamingo.me/dingo v0.2.9
