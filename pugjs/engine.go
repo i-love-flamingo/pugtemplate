@@ -108,18 +108,19 @@ func (e *EventSubscriber) Inject(engine *Engine, logger flamingo.Logger, startup
 // Notify the event subscriber
 func (e *EventSubscriber) Notify(_ context.Context, event flamingo.Event) {
 	switch ev := event.(type) {
-	case *flamingo.StartupEvent:
-		e.logger.Info("preloading templates on flamingo.AppStartupEvent")
-		e.startup.AddProcess(func() {
-			_ = e.engine.LoadTemplates("")
-		})
 	case *web.AreaRoutedEvent:
 		e.logger.Info("preloading templates on web.AreaRoutedEvent for area ", ev.ConfigArea.Name)
-		e.startup.AddProcess(func() {
-			_ = e.engine.LoadTemplates("")
+		e.startup.AddProcess(func() error {
+			return e.engine.LoadTemplates("")
 		})
 	case *flamingo.ServerStartEvent:
-		e.startup.Finish()
+		errs := e.startup.Finish()
+		go func() {
+			err := <-errs
+			if err != nil {
+				panic(err)
+			}
+		}()
 	}
 }
 

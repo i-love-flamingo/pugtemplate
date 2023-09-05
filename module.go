@@ -136,7 +136,7 @@ func (m *Module) Configure(injector *dingo.Injector) {
 	)
 
 	injector.Bind(new(pugjs.Startup)).In(dingo.Singleton)
-	injector.BindMap((*domain.Handler)(nil), "/pugjs/ready").To(new(controllers.Ready))
+	injector.BindMap(new(domain.Handler), "/pugjs/ready").To(new(controllers.Ready))
 
 	if m.DefaultMux != nil {
 		var whitelist []string
