@@ -3,12 +3,12 @@ module flamingo.me/pugtemplate
 go 1.20
 
 require (
-	flamingo.me/dingo v0.2.9
+	flamingo.me/dingo v0.2.10
 	flamingo.me/flamingo/v3 v3.3.0
 	github.com/go-test/deep v1.0.7
 	github.com/pkg/errors v0.9.1
 	github.com/spf13/cobra v1.2.1
-	github.com/stretchr/testify v1.8.0
+	github.com/stretchr/testify v1.8.1
 	go.opencensus.io v0.23.0
 	go.uber.org/goleak v1.2.1
 	golang.org/x/net v0.0.0-20210503060351-7fd8e65b6420
@@ -42,7 +42,7 @@ require (
 	github.com/prometheus/common v0.9.1 // indirect
 	github.com/prometheus/procfs v0.0.10 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
-	github.com/stretchr/objx v0.4.0 // indirect
+	github.com/stretchr/objx v0.5.0 // indirect
 	github.com/uber/jaeger-client-go v2.22.1+incompatible // indirect
 	github.com/zemirco/memorystore v0.0.0-20160308183530-ecd57e5134f6 // indirect
 	go.uber.org/atomic v1.7.0 // indirect
