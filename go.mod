@@ -8,7 +8,7 @@ require (
 	github.com/go-test/deep v1.0.7
 	github.com/pkg/errors v0.9.1
 	github.com/spf13/cobra v1.2.1
-	github.com/stretchr/testify v1.8.1
+	github.com/stretchr/testify v1.8.4
 	go.opencensus.io v0.23.0
 	go.uber.org/goleak v1.2.1
 	golang.org/x/net v0.0.0-20210503060351-7fd8e65b6420
