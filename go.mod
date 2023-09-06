@@ -12,7 +12,7 @@ require (
 	go.opencensus.io v0.24.0
 	go.uber.org/goleak v1.2.1
 	golang.org/x/net v0.14.0
-	golang.org/x/sync v0.0.0-20220722155255-886fb9371eb4
+	golang.org/x/sync v0.3.0
 	gopkg.in/sourcemap.v1 v1.0.5
 )
 
