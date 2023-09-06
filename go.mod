@@ -14,6 +14,7 @@ require (
 	golang.org/x/net v0.15.0
 	golang.org/x/sync v0.3.0
 	gopkg.in/sourcemap.v1 v1.0.5
+	gopkg.in/sourcemap.v2 v2.1.3
 )
 
 require (
