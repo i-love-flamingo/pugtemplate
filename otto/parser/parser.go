@@ -42,7 +42,7 @@ import (
 	"flamingo.me/pugtemplate/otto/ast"
 	"flamingo.me/pugtemplate/otto/file"
 	"flamingo.me/pugtemplate/otto/token"
-	"gopkg.in/sourcemap.v1"
+	"github.com/go-sourcemap/sourcemap"
 )
 
 // A Mode value is a set of flags (or 0). They control optional parser functionality.
