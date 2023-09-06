@@ -5,6 +5,7 @@ go 1.20
 require (
 	flamingo.me/dingo v0.2.10
 	flamingo.me/flamingo/v3 v3.7.0
+	github.com/go-sourcemap/sourcemap v2.1.3+incompatible
 	github.com/go-test/deep v1.1.0
 	github.com/pkg/errors v0.9.1
 	github.com/spf13/cobra v1.7.0
@@ -13,7 +14,6 @@ require (
 	go.uber.org/goleak v1.2.1
 	golang.org/x/net v0.15.0
 	golang.org/x/sync v0.3.0
-	gopkg.in/sourcemap.v1 v1.0.5
 )
 
 require (
@@ -22,7 +22,6 @@ require (
 	contrib.go.opencensus.io/exporter/zipkin v0.1.2 // indirect
 	cuelang.org/go v0.0.15 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
-	github.com/boj/redistore v0.0.0-20180917114910-cd5dcc76aeff // indirect
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect
 	github.com/cockroachdb/apd/v2 v2.0.1 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
@@ -32,7 +31,6 @@ require (
 	github.com/go-logfmt/logfmt v0.5.1 // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/golang/protobuf v1.5.3 // indirect
-	github.com/gomodule/redigo v2.0.0+incompatible // indirect
 	github.com/gorilla/securecookie v1.1.1 // indirect
 	github.com/gorilla/sessions v1.2.1 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
@@ -51,7 +49,6 @@ require (
 	github.com/stretchr/objx v0.5.0 // indirect
 	github.com/uber/jaeger-client-go v2.25.0+incompatible // indirect
 	github.com/zemirco/memorystore v0.0.0-20160308183530-ecd57e5134f6 // indirect
-	go.uber.org/atomic v1.7.0 // indirect
 	go.uber.org/automaxprocs v1.5.3 // indirect
 	go.uber.org/multierr v1.10.0 // indirect
 	go.uber.org/zap v1.25.0 // indirect
