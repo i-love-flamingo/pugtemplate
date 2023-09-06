@@ -7,7 +7,7 @@ require (
 	flamingo.me/flamingo/v3 v3.3.0
 	github.com/go-test/deep v1.0.7
 	github.com/pkg/errors v0.9.1
-	github.com/spf13/cobra v1.2.1
+	github.com/spf13/cobra v1.7.0
 	github.com/stretchr/testify v1.8.1
 	go.opencensus.io v0.23.0
 	go.uber.org/goleak v1.2.1
@@ -32,7 +32,7 @@ require (
 	github.com/gomodule/redigo v2.0.0+incompatible // indirect
 	github.com/gorilla/securecookie v1.1.1 // indirect
 	github.com/gorilla/sessions v1.2.0 // indirect
-	github.com/inconshreveable/mousetrap v1.0.0 // indirect
+	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/matttproud/golang_protobuf_extensions v1.0.1 // indirect
 	github.com/mpvl/unique v0.0.0-20150818121801-cbe035fff7de // indirect
 	github.com/openzipkin/zipkin-go v0.2.2 // indirect
