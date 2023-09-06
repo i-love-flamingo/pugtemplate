@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"path"
@@ -17,6 +16,7 @@ import (
 
 	"flamingo.me/flamingo/v3/framework/flamingo"
 	"flamingo.me/flamingo/v3/framework/opencensus"
+	"flamingo.me/flamingo/v3/framework/web"
 	"github.com/pkg/errors"
 	"go.opencensus.io/stats"
 	"go.opencensus.io/stats/view"
@@ -73,8 +73,9 @@ type (
 
 	// EventSubscriber is the event subscriber for Engine
 	EventSubscriber struct {
-		engine *Engine
-		logger flamingo.Logger
+		engine  *Engine
+		logger  flamingo.Logger
+		startup *Startup
 	}
 )
 
@@ -98,16 +99,28 @@ func init() {
 }
 
 // Inject injects the EventSubscibers dependencies
-func (e *EventSubscriber) Inject(engine *Engine, logger flamingo.Logger) {
+func (e *EventSubscriber) Inject(engine *Engine, logger flamingo.Logger, startup *Startup) {
 	e.engine = engine
 	e.logger = logger
+	e.startup = startup
 }
 
-// Notify the event subscriper
+// Notify the event subscriber
 func (e *EventSubscriber) Notify(_ context.Context, event flamingo.Event) {
-	if _, ok := event.(*flamingo.StartupEvent); ok {
-		e.logger.Info("preloading templates on flamingo.AppStartupEvent")
-		go e.engine.LoadTemplates("")
+	switch ev := event.(type) {
+	case *web.AreaRoutedEvent:
+		e.logger.Info("preloading templates on web.AreaRoutedEvent for area ", ev.ConfigArea.Name)
+		e.startup.AddProcess(func() error {
+			return e.engine.LoadTemplates("")
+		})
+	case *flamingo.ServerStartEvent:
+		errs := e.startup.Finish()
+		go func() {
+			err := <-errs
+			if err != nil {
+				panic(err)
+			}
+		}()
 	}
 }
 
@@ -193,9 +206,9 @@ func (e *Engine) LoadTemplates(filtername string) error {
 
 	start := time.Now()
 
-	manifest, err := ioutil.ReadFile(path.Join(e.Basedir, "manifest.json"))
+	manifest, err := os.ReadFile(path.Join(e.Basedir, "manifest.json"))
 	if err == nil {
-		json.Unmarshal(manifest, &e.Assetrewrites)
+		_ = json.Unmarshal(manifest, &e.Assetrewrites)
 	}
 
 	e.templates, err = e.compileDir(path.Join(e.Basedir, "template", "page"), "", filtername)
@@ -211,7 +224,7 @@ func (e *Engine) LoadTemplates(filtername string) error {
 		}
 	}
 
-	e.Logger.Info("Compiled templates in", time.Since(start))
+	e.Logger.Info("Compiled templates in ", time.Since(start))
 	return nil
 }
 

@@ -4,10 +4,10 @@
 [![GoDoc](https://godoc.org/github.com/i-love-flamingo/pugtemplate?status.svg)](https://godoc.org/github.com/i-love-flamingo/pugtemplate)
 [![Tests](https://github.com/i-love-flamingo/pugtemplate/workflows/Tests/badge.svg?branch=master)](https://github.com/i-love-flamingo/pugtemplate/actions?query=branch%3Amaster+workflow%3ATests)
 
-
 ## Get Started
 
 In your Flamingo project, run:
+
 ```bash
 mkdir frontend
 cd frontend
@@ -20,6 +20,7 @@ npx flamingo-carotene build
 ```
 
 Add the index route in `config/routes.yml`:
+
 ```yaml
 - path: /
   name: home
@@ -31,17 +32,20 @@ See the folder `example` for this example.
 ## Pug js
 
 [Pug](https://pugjs.org/api/getting-started.html) is a JavaScript template rendering engine.
- 
+
 ## Flamingo Pug Template
 
 The Flamingo `flamingo.me/pugtemplate` package is a flamingo template module to use Pug templates.
 
-Pug.js is by default compiled to JavaScript, and executed as HTML. This mechanism is used to render static prototypes for the templates, so the usual HTML prototype is
+Pug.js is by default compiled to JavaScript, and executed as HTML. This mechanism is used to render static prototypes
+for the templates, so the usual HTML prototype is
 just a natural artifact of this templating, instead of an extra workflow step or custom tool.
 
-This allows frontend developers to start templating very early with very few backend support, and without the need to rewrite chunks or even learn a new template language.
+This allows frontend developers to start templating very early with very few backend support, and without the need to
+rewrite chunks or even learn a new template language.
 
-The static prototype can be used to test/analyze the UI in early project phases, when the backend might not be ready yet.
+The static prototype can be used to test/analyze the UI in early project phases, when the backend might not be ready
+yet.
 
 The way pug.js works is essentially the following:
 
@@ -49,7 +53,9 @@ The way pug.js works is essentially the following:
 template -[tokenizer]-> tokens -[parser]-> AST -[compiler]-> JavaScript -[runtime]-> HTML
 ```
 
-To integrate it in Flamingo, we save the AST (abstract syntax tree) in a JSON representations. Pugtemplate will use a parser to build an in-memory tree of the concrete building blocks. It then will use a renderer to transform these blocks into HTML Go templates as follows:
+To integrate it in Flamingo, we save the AST (abstract syntax tree) in a JSON representations. Pugtemplate will use a
+parser to build an in-memory tree of the concrete building blocks. It then will use a renderer to transform these blocks
+into HTML Go templates as follows:
 
 ```
 AST -[parser]-> Block tree -[render]-> go template -[go-template-runtime]-> HTML
@@ -59,12 +65,13 @@ It is possible to view the intermediate result by https://your_flamingo_url/_pug
 
 ### Templating
 
-One feature of pug.js is the possibility to use arbitrary JavaScript in cases where the template syntax does not provide the some functionality. For example, loops can be written as below:
+One feature of pug.js is the possibility to use arbitrary JavaScript in cases where the template syntax does not provide
+the some functionality. For example, loops can be written as below:
 
 ```jade
 ul
-  each val, index in ['zero', 'one', 'two']
-    li= index + ': ' + val
+    each val, index in ['zero', 'one', 'two']
+        li= index + ': ' + val
 ```
 
 In this example the term `['zero', 'one', 'two']` is in JavaScript. Developers will be able to use more advanced code:
@@ -72,22 +79,28 @@ In this example the term `['zero', 'one', 'two']` is in JavaScript. Developers w
 ```jade
 - var prefix = 'foo_'
 ul
-  each val, index in [prefix+'zero', prefix+'one', prefix+'two']
-    li= index + ': ' + val
+    each val, index in [prefix+'zero', prefix+'one', prefix+'two']
+        li= index + ': ' + val
 ```
 
-The pug_template module takes this JavaScript and uses the Go-based JS engine, otto, to parse the JavaScript and transpile it into Go code.
-While this works for most standard statements and language constructs (default data types such as maps, list, etc), it does not support certain things such as Object Oriented Programming or the JavaScript standard library. Only snippets of JavaScript code can be run.
+The pug_template module takes this JavaScript and uses the Go-based JS engine, otto, to parse the JavaScript and
+transpile it into Go code.
+While this works for most standard statements and language constructs (default data types such as maps, list, etc), it
+does not support certain things such as Object Oriented Programming or the JavaScript standard library. Only snippets of
+JavaScript code can be run.
 
 However, it is possible to recreate such functionalities in a third-party module via Flamingo's template functions.
-For example pug_template itself has a substitute for the JavaScript `Math` library with the `min`, `max` and `ceil` functions. Please note that these function have to use reflection and it's up to the implementation to properly reflect the functionality and handle different inputs correctly.
+For example pug_template itself has a substitute for the JavaScript `Math` library with the `min`, `max` and `ceil`
+functions. Please note that these function have to use reflection and it's up to the implementation to properly reflect
+the functionality and handle different inputs correctly.
 
 Nevertheless, extensive usage of JavaScript is not advised.
 
 ## Dynamic JavaScript
 
 The Pug Template engine compiles a subset of JavaScript (ES2015) to Go templates.
-This allows frontend developers to use known a syntax and techniques, instead of learning a complete new template engine.
+This allows frontend developers to use known a syntax and techniques, instead of learning a complete new template
+engine.
 
 To make this possible Flamingo rewrites the JavaScript to Go, on the fly.
 
@@ -103,12 +116,17 @@ To make this possible Flamingo rewrites the JavaScript to Go, on the fly.
 - var multiply = 15 * 8
 ```
 
-Those types have been reflected in Go in a form structs as Pugjs.Object, Pugjs.Map, Pugjs.Array, Pugjs.String and Pugjs.Number.
+Those types have been reflected in Go in a form structs as Pugjs.Object, Pugjs.Map, Pugjs.Array, Pugjs.String and
+Pugjs.Number.
 
 ### Supported prototype functions
 
 #### Array
-The technical documentation of the array struct can be found on [GoDoc](https://godoc.org/flamingo.me/pugtemplate/pugjs#Array). As a short summary, the following functions are publicly available:
+
+The technical documentation of the array struct can be found
+on [GoDoc](https://godoc.org/flamingo.me/pugtemplate/pugjs#Array). As a short summary, the following functions are
+publicly available:
+
 ``` jade
 - var myArray = [1,2,3,4,5]
 - myArray.indexOf(3) // returns 2
@@ -124,7 +142,11 @@ The technical documentation of the array struct can be found on [GoDoc](https://
 Note that the splice and slice functions only have a start index.
 
 #### Objects
-Javascript Object have been transcribed as Go Maps. The technical documentation of the objects/Pugjs.Maps struct can be found on [GoDoc](https://godoc.org/flamingo.me/pugtemplate/pugjs#Map). As a short summary, the following functions are publicly available:
+
+Javascript Object have been transcribed as Go Maps. The technical documentation of the objects/Pugjs.Maps struct can be
+found on [GoDoc](https://godoc.org/flamingo.me/pugtemplate/pugjs#Map). As a short summary, the following functions are
+publicly available:
+
 ``` jade
 - var myObject = {"a": 1, "b": 2}
 - myObject.keys() // returns an array of keys ["a","b"]
@@ -134,7 +156,11 @@ Javascript Object have been transcribed as Go Maps. The technical documentation 
 ```
 
 #### Strings
-The technical documentation of the string struct can be found on [GoDoc](https://godoc.org/flamingo.me/pugtemplate/pugjs#String). As a short summary, the following functions are publicly available:
+
+The technical documentation of the string struct can be found
+on [GoDoc](https://godoc.org/flamingo.me/pugtemplate/pugjs#String). As a short summary, the following functions are
+publicly available:
+
 ``` jade
 - var myString = "This is a nice string"
 - myString.length // returns 21
@@ -161,6 +187,7 @@ p Text #{a} something #{1 + 2}
 ```
 
 ### Conditions
+
 ```jade
 - var user = { description: 'foo bar baz' }
 - var authorised = false
@@ -173,22 +200,25 @@ else
 ```
 
 ### Loops
+
 ```jade
 each value, index in  ["a", "b", "c"]
-  p value #{value} at #{index}
+    p value #{value} at #{index}
 ```
 
 ### Mixins
+
 ```jade
 mixin mymixin(arg1, arg2="default")
-  p.something(id=arg2)= arg1
-  
+    p.something(id=arg2)= arg1
+
 +mymixing("foo")
 
 +mymixin("foo", "bar")
 ```
 
 ### Includes
+
 ```jade
 include /mixin/mymixin
 
@@ -199,24 +229,27 @@ include /mixin/mymixin
 
 Templates can be debugged via `/_pugtpl/debug?tpl=pages/product/view`
 
-
 ## Partials Rendering
 
 The template engine supports rendering of partials.
-The idea of partials is to support progressive enhancement by being able to request just a chunk of content from the browser. The partial will still be rendered server side and should be requested by an ajax call from the browser.
+The idea of partials is to support progressive enhancement by being able to request just a chunk of content from the
+browser. The partial will still be rendered server side and should be requested by an ajax call from the browser.
 
 Partials are requested by setting the HTTP Header `X-Partial`
 
 The requested partials are searched in a subfolder "{templatename}.partials"
 
 So if you have a response that will normally render like this:
+
 ```
 return cc.responder.Render("folder/template")
 ```
 
 And you request that page with the Header `X-Partial: foo,bar`
 
-The engine will search for partials in `folder/template.partials/foo.pug` and `folder/template.partials/bar.pug` and just render them and return them wrapped in a JSON response:
+The engine will search for partials in `folder/template.partials/foo.pug` and `folder/template.partials/bar.pug` and
+just render them and return them wrapped in a JSON response:
+
 ```
 {
     "partials": {
@@ -226,7 +259,8 @@ The engine will search for partials in `folder/template.partials/foo.pug` and `f
 }
 ```
 
-If you call the template function `setPartialData` in this templates, you can add additional data to the json response. For example:
+If you call the template function `setPartialData` in this templates, you can add additional data to the json response.
+For example:
 
 ```
 setPartialData("cartamount", 4)
@@ -245,3 +279,16 @@ Will result in this response:
     }
 }
 ```
+
+## Loading mechanism
+
+In production mode, all templates are loaded at once on application startup. Incoming requests are blocked until
+the loading process has finished.
+
+This module registers a route `/pugjs/ready` on
+the [systemendpoint](https://docs.flamingo.me/2.%20Flamingo%20Core/2.%20Framework%20Modules/Systemendpoint.html)
+which gives an HTTP 200 response only if the template loading has finished. This endpoint can for example be used as
+kubernetes Startup probe.
+
+In Flamingo's debug mode (`flamingo.debug.mode: true`), all templates are loaded on demand on each render request.
+This setting should be used when working on templates locally.
