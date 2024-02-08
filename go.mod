@@ -13,7 +13,7 @@ require (
 	go.opencensus.io v0.24.0
 	go.uber.org/goleak v1.3.0
 	golang.org/x/net v0.15.0
-	golang.org/x/sync v0.3.0
+	golang.org/x/sync v0.6.0
 )
 
 require (
