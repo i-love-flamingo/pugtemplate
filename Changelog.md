@@ -1,5 +1,12 @@
 # Changelog
 
+## Version v1.3.2 (2024-05-16)
+
+### Chores and tidying
+
+- **deps:** update module flamingo.me/flamingo/v3 to v3.8.1 (#75) (12907284)
+- **deps:** update module golang.org/x/net to v0.23.0 (#69) (03ca57d8)
+
 ## Version v1.3.1 (2024-02-09)
 
 ### Ops and CI/CD
