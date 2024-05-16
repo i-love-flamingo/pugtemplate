@@ -7,7 +7,7 @@ toolchain go1.21.6
 require (
 	flamingo.me/dingo v0.2.10
 	flamingo.me/flamingo/v3 v3.8.1
-	github.com/go-sourcemap/sourcemap v2.1.3+incompatible
+	github.com/go-sourcemap/sourcemap v2.1.4+incompatible
 	github.com/go-test/deep v1.1.0
 	github.com/pkg/errors v0.9.1
 	github.com/spf13/cobra v1.8.0
