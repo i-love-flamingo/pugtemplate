@@ -1,0 +1,115 @@
+version: "2"
+run:
+  concurrency: 4
+  modules-download-mode: readonly
+  tests: true
+  allow-parallel-runners: true
+output:
+  formats:
+    text:
+      path: stdout
+      print-linter-name: true
+      print-issued-lines: true
+linters:
+  default: none
+  enable:
+    - bidichk
+    - bodyclose
+    - containedctx
+    - contextcheck
+    - copyloopvar
+    - cyclop
+    - durationcheck
+    - err113
+    - errcheck
+    - errname
+    - errorlint
+    - exhaustive
+    - forbidigo
+    - forcetypeassert
+    - gocognit
+    - goconst
+    - gocritic
+    - gomoddirectives
+    - gosec
+    - govet
+    - grouper
+    - ineffassign
+    - makezero
+    - misspell
+    - mnd
+    - nakedret
+    - nestif
+    - nilerr
+    - nilnil
+    - noctx
+    - nolintlint
+    - nosprintfhostport
+    - paralleltest
+    - prealloc
+    - predeclared
+    - revive
+    - staticcheck
+    - testpackage
+    - thelper
+    - tparallel
+    - unconvert
+    - unparam
+    - unused
+    - usestdlibvars
+    - varnamelen
+    - wrapcheck
+    - wsl
+  settings:
+    mnd:
+      ignored-functions:
+        - context.WithTimeout
+    nolintlint:
+      require-explanation: true
+      require-specific: true
+    revive:
+      rules:
+        - name: var-naming
+          disabled: true
+    varnamelen:
+      max-distance: 10
+      ignore-names:
+        - err
+        - id
+      ignore-type-assert-ok: true
+      ignore-map-index-ok: true
+      ignore-chan-recv-ok: true
+      ignore-decls:
+        - i int
+  exclusions:
+    generated: lax
+    presets:
+      - comments
+      - common-false-positives
+      - legacy
+      - std-error-handling
+    rules:
+      - linters:
+          - containedctx
+          - err113
+          - forcetypeassert
+          - goconst
+          - varnamelen
+          - wrapcheck
+        path: _test\.go
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
+issues:
+  new: false
+  fix: false
+formatters:
+  enable:
+    - gofmt
+  exclusions:
+    generated: lax
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
