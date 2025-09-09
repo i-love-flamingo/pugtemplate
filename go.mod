@@ -14,7 +14,7 @@ require (
 	github.com/stretchr/testify v1.9.0
 	go.opencensus.io v0.24.0
 	go.uber.org/goleak v1.3.0
-	golang.org/x/net v0.27.0
+	golang.org/x/net v0.44.0
 	golang.org/x/sync v0.8.0
 )
 
