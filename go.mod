@@ -5,7 +5,7 @@ go 1.24.0
 toolchain go1.24.13
 
 require (
-	flamingo.me/dingo v0.2.10
+	flamingo.me/dingo v0.3.0
 	flamingo.me/flamingo/v3 v3.10.1
 	github.com/go-sourcemap/sourcemap v2.1.3+incompatible
 	github.com/go-test/deep v1.1.0
