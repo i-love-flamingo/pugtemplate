@@ -2,7 +2,7 @@ module flamingo.me/pugtemplate
 
 go 1.24.0
 
-toolchain go1.24.13
+toolchain go1.25.7
 
 require (
 	flamingo.me/dingo v0.3.0
