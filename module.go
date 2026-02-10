@@ -2,9 +2,9 @@ package pugtemplate
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"io"
+	"io/fs"
 	"log"
 	"net/http"
 	"os"
@@ -70,7 +70,7 @@ func (afs assetFileSystem) Open(path string) (http.File, error) {
 
 	s, err := f.Stat()
 	if err != nil || s.IsDir() {
-		return nil, errors.New("not allowed")
+		return nil, fs.ErrPermission
 	}
 
 	return f, nil
