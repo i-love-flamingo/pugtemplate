@@ -1,6 +1,6 @@
 module flamingo.me/pugtemplate
 
-go 1.24.0
+go 1.25.0
 
 toolchain go1.25.7
 
@@ -15,7 +15,7 @@ require (
 	go.opencensus.io v0.24.0
 	go.uber.org/goleak v1.3.0
 	golang.org/x/net v0.50.0
-	golang.org/x/sync v0.19.0
+	golang.org/x/sync v0.22.0
 )
 
 require (
