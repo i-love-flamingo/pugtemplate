@@ -1,8 +1,6 @@
 module flamingo.me/pugtemplate
 
-go 1.24.0
-
-toolchain go1.25.7
+go 1.26.0
 
 require (
 	flamingo.me/dingo v0.3.0
@@ -14,8 +12,8 @@ require (
 	github.com/stretchr/testify v1.11.1
 	go.opencensus.io v0.24.0
 	go.uber.org/goleak v1.3.0
-	golang.org/x/net v0.50.0
-	golang.org/x/sync v0.19.0
+	golang.org/x/net v0.55.0
+	golang.org/x/sync v0.21.0
 )
 
 require (
@@ -56,8 +54,8 @@ require (
 	go.uber.org/automaxprocs v1.6.0 // indirect
 	go.uber.org/multierr v1.10.0 // indirect
 	go.uber.org/zap v1.27.1 // indirect
-	golang.org/x/sys v0.41.0 // indirect
-	golang.org/x/text v0.34.0 // indirect
+	golang.org/x/sys v0.45.0 // indirect
+	golang.org/x/text v0.39.0 // indirect
 	golang.org/x/xerrors v0.0.0-20231012003039-104605ab7028 // indirect
 	google.golang.org/api v0.152.0 // indirect
 	google.golang.org/protobuf v1.33.0 // indirect
