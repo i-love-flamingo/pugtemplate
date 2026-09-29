@@ -128,8 +128,8 @@ func TestConvert(t *testing.T) {
 
 		expected := []struct{ in, out interface{} }{
 			// Special Cases
-			{nil, Nil{}},                                // nil
-			{String("a"), String("a")},                  // object -> object
+			{nil, Nil{}},               // nil
+			{String("a"), String("a")}, // object -> object
 			{reflect.ValueOf(String("a")), String("a")}, // reflect.Value(object) -> object
 			{reflect.Value{}, Nil{}},                    // invalid reflect
 			{errors.New("test"), String("Error: test")}, // errors
