@@ -2,8 +2,9 @@ package templatefunctions
 
 import (
 	"context"
-	"flamingo.me/pugtemplate/pugjs"
 	"testing"
+
+	"flamingo.me/pugtemplate/pugjs"
 
 	"flamingo.me/flamingo/v3/framework/flamingo"
 	"github.com/stretchr/testify/assert"
