@@ -2,9 +2,10 @@ package templatefunctions
 
 import (
 	"context"
+	"testing"
+
 	"flamingo.me/pugtemplate/pugjs"
 	"github.com/stretchr/testify/assert"
-	"testing"
 )
 
 func TestDebugFunc_Func(t *testing.T) {

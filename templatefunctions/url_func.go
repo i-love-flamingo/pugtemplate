@@ -2,9 +2,10 @@ package templatefunctions
 
 import (
 	"context"
-	"flamingo.me/flamingo/v3/framework/flamingo"
 	"html/template"
 	"net/url"
+
+	"flamingo.me/flamingo/v3/framework/flamingo"
 
 	"flamingo.me/flamingo/v3/framework/web"
 	"flamingo.me/pugtemplate/pugjs"
