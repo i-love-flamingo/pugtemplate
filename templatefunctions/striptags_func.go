@@ -6,6 +6,7 @@ import (
 
 	"flamingo.me/flamingo/v3/framework/config"
 	"golang.org/x/net/html"
+	"golang.org/x/net/html/atom"
 
 	"flamingo.me/pugtemplate/pugjs"
 )
@@ -46,7 +47,9 @@ func createTag(definition string) allowedTag {
 // Func implements the strip tags template function
 func (df StriptagsFunc) Func(ctx context.Context) interface{} {
 	return func(htmlString string, allowedTagsConfig ...config.Slice) string {
-		doc, err := html.ParseFragment(strings.NewReader(htmlString), nil)
+		// a nil context makes x/net/html 0.56+ panic on <input>
+		bodyContext := &html.Node{Type: html.ElementNode, DataAtom: atom.Body, Data: "body"}
+		doc, err := html.ParseFragment(strings.NewReader(htmlString), bodyContext)
 		if err != nil {
 			return ""
 		}
