@@ -1,5 +1,19 @@
 # Changelog
 
+## Version v1.3.3 (2026-10-03)
+
+### Fixes
+
+- **deps:** patch vulnerable modules and scan with govulncheck (#96) (20113958)
+
+### Ops and CI/CD
+
+- update checkout and align CI job names (#99) (3f3e8ac3)
+
+### Chores and tidying
+
+- **deps:** update module github.com/stretchr/testify to v1.12.1 (#102) (5d99142b)
+
 ## Version v1.3.2 (2026-02-10)
 
 ### Fixes
