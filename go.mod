@@ -4,7 +4,7 @@ go 1.26.0
 
 require (
 	flamingo.me/dingo v0.4.1
-	flamingo.me/flamingo/v3 v3.17.4
+	flamingo.me/flamingo/v3 v3.17.5
 	github.com/go-sourcemap/sourcemap v2.1.4+incompatible
 	github.com/go-test/deep v1.1.1
 	github.com/pkg/errors v0.9.1
@@ -12,8 +12,8 @@ require (
 	github.com/stretchr/testify v1.12.1
 	go.opencensus.io v0.24.0
 	go.uber.org/goleak v1.3.0
-	golang.org/x/net v0.59.0
-	golang.org/x/sync v0.23.0
+	golang.org/x/net v0.61.0
+	golang.org/x/sync v0.24.0
 )
 
 require (
@@ -41,20 +41,20 @@ require (
 	github.com/prometheus/procfs v0.12.0 // indirect
 	github.com/prometheus/statsd_exporter v0.22.7 // indirect
 	github.com/rbcervilla/redisstore/v9 v9.0.0 // indirect
-	github.com/redis/go-redis/v9 v9.21.0 // indirect
+	github.com/redis/go-redis/v9 v9.23.0 // indirect
 	github.com/spf13/pflag v1.0.10 // indirect
 	github.com/stretchr/objx v0.5.3 // indirect
 	github.com/uber/jaeger-client-go v2.25.0+incompatible // indirect
 	github.com/zemirco/memorystore v0.0.0-20160308183530-ecd57e5134f6 // indirect
-	go.opentelemetry.io/otel v1.44.0 // indirect
-	go.opentelemetry.io/otel/trace v1.44.0 // indirect
-	go.uber.org/atomic v1.11.0 // indirect
+	go.opentelemetry.io/otel v1.46.0 // indirect
+	go.opentelemetry.io/otel/trace v1.46.0 // indirect
+	go.uber.org/atomic v1.12.0 // indirect
 	go.uber.org/automaxprocs v1.6.0 // indirect
 	go.uber.org/multierr v1.10.0 // indirect
 	go.uber.org/zap v1.28.0 // indirect
 	go.yaml.in/yaml/v3 v3.0.5 // indirect
-	golang.org/x/sys v0.48.0 // indirect
-	golang.org/x/text v0.42.0 // indirect
+	golang.org/x/sys v0.49.0 // indirect
+	golang.org/x/text v0.43.0 // indirect
 	golang.org/x/xerrors v0.0.0-20231012003039-104605ab7028 // indirect
 	gonum.org/v1/gonum v0.17.0 // indirect
 	google.golang.org/api v0.152.0 // indirect
