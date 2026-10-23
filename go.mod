@@ -6,7 +6,7 @@ require (
 	flamingo.me/dingo v0.4.1
 	flamingo.me/flamingo/v3 v3.17.4
 	github.com/go-sourcemap/sourcemap v2.1.4+incompatible
-	github.com/go-test/deep v1.1.1
+	github.com/go-test/deep v1.1.2
 	github.com/pkg/errors v0.9.1
 	github.com/spf13/cobra v1.10.2
 	github.com/stretchr/testify v1.12.1
